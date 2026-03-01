@@ -9,7 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Google Fonts軽量化: 4ウェイト→2ウェイトに削減 -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400&display=swap" rel="stylesheet">
 
   <!-- リソースプリロード -->
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" as="script">
@@ -19,588 +21,12 @@
 
   <!-- CSVフェッチ即時開始（DOMContentLoaded前に開始） -->
   <script>
-    window.__csvFetchPromise = fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv')
+    window.__csvFetchPromise = fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1496009444&single=true&output=csv')
       .then(res => res.ok ? res.text() : Promise.reject('CSV取得失敗'))
       .catch(err => { window.__csvFetchError = err; return null; });
   </script>
 
-  <style>
-    :root {
-      --color-base: #faf5f0;
-      --color-card: #ffffff;
-      --color-accent: #489981;
-      --color-accent-hover: #3d8570;
-      --color-air: #dfeeea;
-      --color-text: #4b4642;
-      --color-text-light: #7a756f;
-      --color-border: #e8e4df;
-      --color-error: #c97c6b;
-      --color-error-bg: #fdf6f4;
-      --font-main: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: var(--font-main);
-      font-size: 22px;
-      background: var(--color-base);
-      color: var(--color-text);
-      line-height: 1.5;
-      min-height: 100vh;
-      padding: 10px 8px 20px;
-      -webkit-font-smoothing: antialiased;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    /* ヘッダー */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      padding: 6px 0;
-    }
-
-    .header svg {
-      width: 38px;
-      height: 38px;
-      color: var(--color-accent);
-      flex-shrink: 0;
-    }
-
-    .header h1 {
-      font-size: 30px;
-      font-weight: 700;
-    }
-
-    /* メインカード */
-    .card {
-      background: var(--color-card);
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(75, 70, 66, 0.08);
-      padding: 14px 12px;
-      margin-bottom: 14px;
-    }
-
-    /* 2カラムレイアウト（スマホでは縦並び） */
-    .form-row {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 12px;
-    }
-
-    .form-col {
-      width: 100%;
-      min-width: 0;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--color-text);
-      margin-bottom: 6px;
-    }
-
-    select,
-    input[type="text"] {
-      width: 100%;
-      padding: 14px 12px;
-      font-size: 24px !important;
-      font-family: var(--font-main);
-      font-weight: 400;
-      color: var(--color-text);
-      background: var(--color-base);
-      border: 2px solid var(--color-border);
-      border-radius: 10px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-
-    select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234b4642' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      background-size: 24px;
-      padding-right: 40px;
-      cursor: pointer;
-    }
-
-    select:focus,
-    input[type="text"]:focus {
-      outline: none;
-      border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px rgba(72, 153, 129, 0.15);
-    }
-
-    select:disabled,
-    input:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: #f0ede8;
-    }
-
-    input::placeholder {
-      color: #a09a94;
-      font-size: 20px !important;
-    }
-
-    .form-hint {
-      font-size: 15px;
-      color: var(--color-text-light);
-      margin-top: 6px;
-      margin-bottom: 0;
-      line-height: 1.6;
-      transition: opacity 0.2s, max-height 0.2s;
-    }
-
-    .form-hint.hidden {
-      opacity: 0;
-      max-height: 0;
-      margin: 0;
-      overflow: hidden;
-    }
-
-    .form-hint.loading-hint {
-      color: var(--color-accent);
-      font-weight: 700;
-    }
-
-    .form-hint.loading-hint::before {
-      content: '';
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border: 2px solid var(--color-border);
-      border-top: 2px solid var(--color-accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-
-    /* ボタン（フル幅） */
-    .btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 16px 12px;
-      font-size: 24px !important;
-      font-family: var(--font-main);
-      font-weight: 700;
-      color: #fff;
-      background: var(--color-accent);
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 4px;
-    }
-
-    .btn:hover:not(:disabled) {
-      background: var(--color-accent-hover);
-    }
-
-    .btn:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn svg {
-      width: 26px;
-      height: 26px;
-    }
-
-    /* エラーメッセージ */
-    .message {
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 22px !important;
-      font-weight: 700;
-      margin-top: 12px;
-      display: none;
-      line-height: 1.4;
-    }
-
-    .message.show {
-      display: block;
-    }
-
-    .message.error {
-      background: var(--color-error-bg);
-      color: var(--color-error);
-      border: 1px solid rgba(201, 124, 107, 0.3);
-    }
-
-    /* 結果セクション */
-    .result-section {
-      margin-top: 14px;
-      display: none;
-    }
-
-    .result-section.show {
-      display: block;
-    }
-
-    /* 結果ヘッダー（地域名を含む）- 枠線で差別化 */
-    .result-header {
-      background: #f5f0e8;
-      border: 3px solid var(--color-accent);
-      border-radius: 12px;
-      padding: 16px 18px;
-      margin-bottom: 14px;
-    }
-
-    .result-header-title {
-      font-size: 26px !important;
-      font-weight: 700;
-      color: var(--color-text);
-      text-align: center;
-    }
-
-    .result-header-sub {
-      font-size: 18px !important;
-      color: var(--color-text-light);
-      text-align: center;
-      margin-top: 4px;
-    }
-
-    /* 検索中ヘッダー */
-    .result-header.searching {
-      background: var(--color-air);
-      border-color: var(--color-accent-hover);
-    }
-
-    .result-header.searching .result-header-title {
-      color: var(--color-accent);
-    }
-
-    .searching-dots {
-      display: inline-block;
-    }
-
-    .searching-dots::after {
-      content: '';
-      animation: dots 1.5s steps(4, end) infinite;
-    }
-
-    @keyframes dots {
-      0% {
-        content: '';
-      }
-
-      25% {
-        content: '.';
-      }
-
-      50% {
-        content: '..';
-      }
-
-      75% {
-        content: '...';
-      }
-
-      100% {
-        content: '';
-      }
-    }
-
-    /* 凡例 */
-    .result-legend {
-      background: #f9f7f5;
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-      border: 1px solid var(--color-border);
-    }
-
-    .result-legend-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--color-text-light);
-      margin-bottom: 8px;
-    }
-
-    .result-legend-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 6px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .result-legend-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .legend-badge {
-      flex-shrink: 0;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 700;
-      min-width: 70px;
-      text-align: center;
-    }
-
-    .legend-badge.available {
-      background: var(--color-air);
-      color: var(--color-accent);
-    }
-
-    .legend-badge.consult {
-      background: #fef3e6;
-      color: #c4873b;
-    }
-
-    .legend-badge.unavailable {
-      background: #f5f3f1;
-      color: #999;
-    }
-
-    .legend-desc {
-      color: var(--color-text);
-      padding-top: 2px;
-    }
-
-    /* 結果アイテム */
-    .result-item {
-      background: var(--color-base);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 10px;
-      border: 1px solid var(--color-border);
-    }
-
-    .result-item:last-child {
-      margin-bottom: 0;
-    }
-
-    /* サービス名（種別・カテゴリー統合） */
-    .result-service {
-      font-size: 22px !important;
-      font-weight: 700;
-      color: var(--color-text);
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    /* 状況表示 */
-    .result-status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .result-status-label {
-      font-size: 18px !important;
-      color: var(--color-text-light);
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    /* 判定バッジ */
-    .status-badge {
-      display: inline-block;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 22px !important;
-      font-weight: 700;
-    }
-
-    .status-badge.available {
-      background: var(--color-air);
-      color: var(--color-accent);
-    }
-
-    .status-badge.consult {
-      background: #fef3e6;
-      color: #c4873b;
-    }
-
-    .status-badge.unavailable {
-      background: #f5f3f1;
-      color: #999;
-    }
-
-    .status-badge.partial {
-      background: #e8f4f0;
-      color: #489981;
-    }
-
-    /* フッター */
-    .footer {
-      text-align: center;
-      padding: 8px 0;
-    }
-
-    .footer-text {
-      font-size: 17px !important;
-      color: var(--color-text-light);
-    }
-
-    .footer-link {
-      color: var(--color-accent);
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    /* PC向け（768px以上） */
-    @media (min-width: 768px) {
-      body {
-        padding: 24px 20px 40px;
-      }
-
-      .card {
-        max-width: 640px;
-        margin: 0 auto 20px;
-        padding: 24px 20px;
-      }
-
-      .form-row {
-        flex-direction: row;
-        gap: 16px;
-      }
-
-      .form-col {
-        flex: 1;
-        width: auto;
-      }
-
-      .btn {
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-    }
-
-    /* アニメーション */
-    .fade-in {
-      animation: fadeIn 0.3s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* ローディング表示 */
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(250, 245, 240, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.3s;
-    }
-
-    .loading-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid var(--color-border);
-      border-top: 4px solid var(--color-accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loading-text {
-      margin-top: 20px;
-      font-size: 18px;
-      color: var(--color-text);
-      font-weight: 700;
-    }
-
-    .loading-subtext {
-      margin-top: 8px;
-      font-size: 15px;
-      color: var(--color-text-light);
-    }
-
-    .loading-error {
-      max-width: 400px;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .loading-error-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--color-error);
-      margin-bottom: 12px;
-    }
-
-    .loading-error-message {
-      font-size: 16px;
-      color: var(--color-text);
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-
-    .retry-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      font-size: 18px;
-      font-family: var(--font-main);
-      font-weight: 700;
-      color: #fff;
-      background: var(--color-accent);
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .retry-btn:hover {
-      background: var(--color-accent-hover);
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 
 <body>
@@ -616,22 +42,32 @@
   <div class="container">
     <!-- ヘッダー -->
     <header class="header">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-      </svg>
-      <h1>対応エリア確認</h1>
+      <div class="header-inner">
+        <h1 class="h1">
+          <a href="https://libe-home.com/">
+            <img src="assets/images/logo.svg" alt="リベ大工務店" width="220" height="42">
+          </a>
+        </h1>
+        <nav class="header-nav">
+          <a href="https://libe-home.com/" class="header-nav-link">トップページ</a>
+          <a href="https://lin.ee/zGxs8aB" class="header-nav-btn">LINEでお問い合わせ</a>
+          </ul>
+        </nav>
+      </div>
     </header>
 
     <!-- メインカード -->
-    <main class="card">
-      <!-- 1段目：都道府県 + 市区町村 -->
-      <div class="form-row">
-        <div class="form-col">
+    <main>
+      <div class="main-title-area">
+        <img src="assets/images/logo_icon.svg" alt="" width="31" height="38">
+        <h2 class="main-title">対応エリア検索</h2>
+      </div>
+      <div class="card">
+        <!-- 1段目：都道府県 + 市区町村 -->
+        <div class="form-item">
           <label class="form-label" for="pref">都道府県</label>
-          <select id="pref">
-            <option value="">選択</option>
+          <select id="pref" required>
+            <option value="">選択してください</option>
             <option value="北海道">北海道</option>
             <option value="青森県">青森県</option>
             <option value="岩手県">岩手県</option>
@@ -681,56 +117,162 @@
             <option value="沖縄県">沖縄県</option>
           </select>
         </div>
-        <div class="form-col">
+        <div class="form-item">
           <label class="form-label" for="muni">市区町村</label>
           <input id="muni" type="text" list="muniList" placeholder="データ読み込み中..." autocomplete="off" />
           <datalist id="muniList"></datalist>
           <p id="muniHint" class="form-hint loading-hint">※ エリアデータを読み込んでいます...</p>
         </div>
+
+        <!-- 2段目：確認ボタンのみ -->
+        <button id="btn" class="btn" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          検索する
+        </button>
+
+        <!-- エラーメッセージ -->
+        <div id="msg" class="message"></div>
+
+        </section>
+
+        <!-- 結果表示 -->
+        <section id="result" class="result-section"></section>
+
+        <!-- 結果表示 -->
+        <section id="result-demo" class="result-section fade-in">
+          <h2 class="result-header">
+            <span class="result-header-title">〇〇県〇〇市</span>
+            <span class="result-header-sub">の対応状況</span>
+          </h2>
+          <div class="result-legend">
+            <div class="result-legend-item">
+              <span class="legend-badge available">対応可能</span>
+              <span class="legend-desc">通常対応しているエリアです</span>
+            </div>
+            <div class="result-legend-item">
+              <span class="legend-badge consult">要相談</span>
+              <span class="legend-desc">内容や地域条件により対応可否を確認します</span>
+            </div>
+            <div class="result-legend-item">
+              <span class="legend-badge unavailable">対応不可</span>
+              <span class="legend-desc">現在は対応対象外のエリアです</span>
+            </div>
+          </div>
+
+          <!-- 工務店の結果 -->
+          <h3 class="result-title"><img src="assets/images/logo.svg" alt="リベ大工務店" width="127" height="24"></h3>
+          <div class="result-item">
+            <h4 class="result-service">注文住宅</h4>
+            <div class="result-status">
+              <span class="status-badge available">対応可能</span>
+            </div>
+          </div>
+          <div class="result-item">
+            <h4 class="result-service">リノベーション</h4>
+            <div class="result-status">
+              <span class="status-badge consult">要相談</span>
+            </div>
+          </div>
+          <div class="result-item">
+            <h4 class="result-service">オフィス・店舗（新築・リノベーション）</h4>
+            <div class="result-status">
+              <span class="status-badge unavailable">対応不可</span>
+              <p class="result-status-note">※オフィス・店舗のリフォームをご希望の方は「リベ大リフォーム」をご確認ください。</p>
+            </div>
+          </div>
+
+          <!-- リベ大リフォームの結果 -->
+          <h3 class="result-title"><img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24"></h3>
+          <div class="result-item">
+            <h4 class="result-service">リフォーム</h4>
+            <div class="result-status">
+              <span class="result-status-label">対応可能工事：</span>
+              <ul class="status-badge-group">
+                <li class="status-badge partial">大工工事</li>
+                <li class="status-badge partial">建具（木製）工事</li>
+                <li class="status-badge partial">設備工事</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- リフォーム各工事の紹介 -->
+          <section class="work-intro">
+            <h3 class="work-intro-title">リフォーム各工事の紹介</h3>
+            <dl class="work-intro-list">
+              <dt class="work-intro-term">大工工事</dt>
+              <dd class="work-intro-desc">内装工事、断熱工事、壁の設置・撤去、畳からフローリングへの変更、室内のバリアフリー化、収納棚・スペースの追加、造作家具工事など</dd>
+
+              <dt class="work-intro-term">内装工事</dt>
+              <dd class="work-intro-desc">壁紙の張替え、床（クッションフロア、カーペットなど）の張り替え</dd>
+
+              <dt class="work-intro-term">断熱工事</dt>
+              <dd class="work-intro-desc">開口部の断熱（内窓設置、窓の二重化、玄関ドア交換等）、床・天井・壁の断熱施工</dd>
+
+              <dt class="work-intro-term">建具（木製）工事</dt>
+              <dd class="work-intro-desc">建具の交換・調整、造作建具など</dd>
+
+              <dt class="work-intro-term">設備工事</dt>
+              <dd class="work-intro-desc">キッチン・浴室・洗面台・トイレといった水回り設備の交換、給排水工事、水栓（蛇口）の交換、エコキュートの交換、IHクッキングヒーター交換など</dd>
+
+              <dt class="work-intro-term">ガス工事</dt>
+              <dd class="work-intro-desc">ガス給湯器・ガスコンロの交換、ガス配管工事（ガス栓増設）など</dd>
+
+              <dt class="work-intro-term">塗装工事</dt>
+              <dd class="work-intro-desc">外壁塗装、屋根塗装、コーキング打ち替え、内壁の塗り替えなど</dd>
+
+              <dt class="work-intro-term">外壁修繕</dt>
+              <dd class="work-intro-desc">壁の下地補修、タイル補修、シーリング工事、外壁塗装、屋上防水など</dd>
+
+              <dt class="work-intro-term">板金工事</dt>
+              <dd class="work-intro-desc">カラーベスト葺き替え、ガルバリウム鋼板屋根カバー、雨樋工事など</dd>
+
+              <dt class="work-intro-term">屋根工事</dt>
+              <dd class="work-intro-desc">瓦屋根葺き替え、瓦の修繕など</dd>
+
+              <dt class="work-intro-term">電気工事</dt>
+              <dd class="work-intro-desc">照明・エアコンの設置・交換、コンセント増設、スイッチの交換、不調の修理、インターホン・レンジフード・浴室乾燥機の交換・設置、IHクッキングヒーター交換など
+              </dd>
+
+              <dt class="work-intro-term">シロアリ工事（害虫対策）</dt>
+              <dd class="work-intro-desc">シロアリの駆除・防除、害虫対策など</dd>
+
+              <dt class="work-intro-term">その他</dt>
+              <dd class="work-intro-desc">外構工事、エアコンクリーニング、畳交換など</dd>
+            </dl>
+          </section>
+        </section>
+
       </div>
-
-      <!-- 2段目：確認ボタンのみ -->
-      <button id="btn" class="btn" type="button">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        確認する
-      </button>
-
-      <!-- エラーメッセージ -->
-      <div id="msg" class="message"></div>
-
-      <!-- 結果表示 -->
-      <div id="result" class="result-section"></div>
     </main>
 
     <!-- フッター -->
     <footer class="footer">
-      <p class="footer-text">
-        ご不明な点は<a id="contactLink" href="#" class="footer-link">お問い合わせ</a>ください
-      </p>
+      <div class="footer-inner">
+        <a href="https://libe-home.com/privacy" class="footer-link">プライバシーポリシー</a>
+        <small class="copyright">© 2026 リベ大工務店</small>
+      </div>
     </footer>
   </div>
 
   <script>
     // ==================== 設定 ====================
     const CONFIG = {
-      CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv',
+      CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1496009444&single=true&output=csv',
       CONTACT_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSeqtoxMGXGZEHZ9x2QbNUdb7g--Fb-yoxjU5VKbuMT5TmJIvw/viewform',
-      HEADER_PROVIDER_ROW: 2,
-      HEADER_CATEGORY_ROW: 3,
-      DATA_START_ROW: 4,
-      FIRST_JUDGE_COL: 4,
+      HEADER_ROW: 1,        // 1行目にカテゴリ（注文住宅・大規模・小規模・オフィス・店舗）
+      DATA_START_ROW: 2,    // 2行目からデータ開始
+      FIRST_JUDGE_COL: 4,   // D列から判定列
       SUGGEST_LIMIT: 30
     };
 
     // ==================== グローバルデータ ====================
     const appData = {
       table: [],              // 2次元配列（CSVデータ全体）
-      providers: [],          // プロバイダー種別（2行目 D列以降）
-      categories: [],         // カテゴリ（3行目 D列以降）
+      categories: [],         // カテゴリ（1行目 D列以降：注文住宅・大規模・小規模・オフィス・店舗）
       rowsByPref: new Map(),  // 都道府県別インデックス
       isReady: false          // データ準備完了フラグ
     };
@@ -748,6 +290,7 @@
     const elBtn = document.getElementById("btn");
     const elMsg = document.getElementById("msg");
     const elResult = document.getElementById("result");
+    const elResultDemo = document.getElementById("result-demo");
     const elContactLink = document.getElementById("contactLink");
     const elMuniHint = document.getElementById("muniHint");
     const elLoadingOverlay = document.getElementById("loadingOverlay");
@@ -759,7 +302,8 @@
     // ==================== カテゴリー名の変換マップ ====================
     const categoryNameMap = {
       "大規模": "大規模リフォーム",
-      "小規模": "小規模リフォーム"
+      "小規模": "小規模リフォーム",
+      "オフィス・店舗": "オフィス・店舗"
     };
 
     // ==================== ユーティリティ関数 ====================
@@ -783,6 +327,7 @@
     function clearResult() {
       elResult.innerHTML = "";
       elResult.classList.remove("show");
+      if (elResultDemo) elResultDemo.classList.remove("show");
     }
 
     // 入力無効化
@@ -805,21 +350,27 @@
         `;
       elResult.appendChild(header);
       elResult.classList.add("show");
+      if (elResultDemo) elResultDemo.classList.add("show");
     }
 
     // 判定値のスタイル判定
     function getStatusClass(value) {
       if (!value || value === "" || value === "—") return "unavailable";
+      // 非対応エリア・対応エリア外を先に判定
+      if (value.includes("非対応") || value.includes("対応エリア外")) return "unavailable";
+      // 要相談を含む場合（工事種類＋要相談の組み合わせも含む）
       if (value.includes("要相談")) return "consult";
-      if (value.includes("一部") || value.includes("除く")) return "partial";
-      if (value === "○" || value.includes("対応")) return "available";
-      return "unavailable";
+      // 対応可・○
+      if (value === "○" || value === "対応可") return "available";
+      // その他（工事種類のリストなど）は対応可能として扱う
+      return "available";
     }
 
-    // 判定値の表示テキスト
+    // 判定値の表示テキスト（カンマ区切りを改行に変換）
     function getStatusText(value) {
       if (!value || value === "") return "対応エリア外";
-      return value;
+      // カンマ区切りを改行に変換
+      return value.replace(/,/g, '\n');
     }
 
     // ローディング表示制御
@@ -888,13 +439,11 @@
 
       appData.table = parsed.data;
 
-      // ヘッダ読み取り（2行目・3行目）
-      const providerRow = appData.table[CONFIG.HEADER_PROVIDER_ROW - 1];
-      const categoryRow = appData.table[CONFIG.HEADER_CATEGORY_ROW - 1];
+      // ヘッダ読み取り（1行目からカテゴリを取得）
+      const headerRow = appData.table[CONFIG.HEADER_ROW - 1];
 
-      // D列以降を取得（index 3以降）
-      appData.providers = providerRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
-      appData.categories = categoryRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
+      // D列以降を取得（index 3以降：注文住宅・大規模・小規模・オフィス・店舗）
+      appData.categories = headerRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
 
       // インデックス構築
       buildIndex();
@@ -1044,7 +593,7 @@
     // データ読み込み完了時のUI更新
     function onDataReady() {
       // placeholderを更新
-      elMuni.placeholder = "候補から選択";
+      elMuni.placeholder = "候補から選択してください";
 
       // ヒントを更新（ローディング表示を解除）
       if (elMuniHint) {
@@ -1164,14 +713,13 @@
 
       const items = [];
       for (let i = 0; i < values.length; i++) {
-        const provider = appData.providers[i];
         const category = appData.categories[i];
         const value = values[i];
 
-        if (!provider || !category) continue;
+        // カテゴリ名が空の場合はスキップ
+        if (!category || category.trim() === '') continue;
 
         items.push({
-          provider: provider.trim(),
           category: category.trim(),
           value: value ? value.trim() : ''
         });
@@ -1202,7 +750,7 @@
       const header = document.createElement("div");
       header.className = "result-header";
       header.innerHTML = `
-          <div class="result-header-title">${res.pref} ${res.muni}</div>
+          <h2 class="result-header-title">${res.pref} ${res.muni}</h2>
           <div class="result-header-sub">の対応状況</div>
         `;
       elResult.appendChild(header);
@@ -1217,14 +765,22 @@
           </div>
           <div class="result-legend-item">
             <span class="legend-badge consult">要相談</span>
-            <span class="legend-desc">内容や地域条件により社内にて対応可否を確認します</span>
+            <span class="legend-desc">内容や地域条件により対応可否を確認します</span>
           </div>
           <div class="result-legend-item">
-            <span class="legend-badge unavailable">対応エリア外</span>
+            <span class="legend-badge unavailable">対応不可</span>
             <span class="legend-desc">現在は対応対象外のエリアです</span>
           </div>
         `;
       elResult.appendChild(legend);
+
+      const logoImg = document.createElement("img");
+      logoImg.className = "result-logo";
+      logoImg.src = "assets/images/logo.svg";
+      logoImg.alt = "リベ大工務店";
+      logoImg.width = 127;
+      logoImg.height = 24;
+      elResult.appendChild(logoImg);
 
       items.forEach(it => {
         const card = document.createElement("div");
@@ -1233,7 +789,7 @@
         const serviceName = document.createElement("div");
         serviceName.className = "result-service";
         const formattedCategory = formatCategoryName(it.category ?? "");
-        serviceName.textContent = `${it.provider ?? ""} ― ${formattedCategory}`;
+        serviceName.textContent = formattedCategory;
         card.appendChild(serviceName);
 
         const statusRow = document.createElement("div");
@@ -1255,6 +811,7 @@
       });
 
       elResult.classList.add("show", "fade-in");
+      if (elResultDemo) elResultDemo.classList.add("show", "fade-in");
     }
 
     // ==================== イベントハンドラ ====================
@@ -1356,9 +913,12 @@
     // ==================== 初期化 ====================
 
     document.addEventListener("DOMContentLoaded", () => {
-      // お問い合わせリンク設定
-      elContactLink.href = CONFIG.CONTACT_URL;
-      elContactLink.target = "_blank";
+      console.log('[CSV] DOMContentLoaded 発火');
+      // お問い合わせリンク設定（要素がある場合のみ）
+      if (elContactLink) {
+        elContactLink.href = CONFIG.CONTACT_URL;
+        elContactLink.target = "_blank";
+      }
 
       // イベントリスナー設定
       elPref.addEventListener("change", onPrefChange);
