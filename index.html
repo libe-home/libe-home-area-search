@@ -1,836 +1,859 @@
 <!doctype html>
 <html lang="ja">
-  <head>
-    <base target="_top" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>対応エリア確認 | リベ大工務店</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Google Fonts軽量化: 4ウェイト→2ウェイトに削減 -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- リソースプリロード -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" as="script">
+<head>
+  <base target="_top" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>対応エリア確認 | リベ大工務店</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Google Fonts軽量化: 4ウェイト→2ウェイトに削減 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- PapaParse CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <!-- リソースプリロード -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" as="script">
 
-    <!-- CSVフェッチ即時開始（DOMContentLoaded前に開始） -->
-    <script>
-      window.__csvFetchPromise = fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv')
-        .then(res => res.ok ? res.text() : Promise.reject('CSV取得失敗'))
-        .catch(err => { window.__csvFetchError = err; return null; });
-    </script>
+  <!-- PapaParse CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-    <style>
-      :root {
-        --color-base: #faf5f0;
-        --color-card: #ffffff;
-        --color-accent: #489981;
-        --color-accent-hover: #3d8570;
-        --color-air: #dfeeea;
-        --color-text: #4b4642;
-        --color-text-light: #7a756f;
-        --color-border: #e8e4df;
-        --color-error: #c97c6b;
-        --color-error-bg: #fdf6f4;
-        --font-main: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  <!-- CSVフェッチ即時開始（DOMContentLoaded前に開始） -->
+  <script>
+    window.__csvFetchPromise = fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv')
+      .then(res => res.ok ? res.text() : Promise.reject('CSV取得失敗'))
+      .catch(err => { window.__csvFetchError = err; return null; });
+  </script>
+
+  <style>
+    :root {
+      --color-base: #faf5f0;
+      --color-card: #ffffff;
+      --color-accent: #489981;
+      --color-accent-hover: #3d8570;
+      --color-air: #dfeeea;
+      --color-text: #4b4642;
+      --color-text-light: #7a756f;
+      --color-border: #e8e4df;
+      --color-error: #c97c6b;
+      --color-error-bg: #fdf6f4;
+      --font-main: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      font-size: 22px;
+      background: var(--color-base);
+      color: var(--color-text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 10px 8px 20px;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ヘッダー */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 6px 0;
+    }
+
+    .header svg {
+      width: 38px;
+      height: 38px;
+      color: var(--color-accent);
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    /* メインカード */
+    .card {
+      background: var(--color-card);
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(75, 70, 66, 0.08);
+      padding: 14px 12px;
+      margin-bottom: 14px;
+    }
+
+    /* 2カラムレイアウト（スマホでは縦並び） */
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .form-col {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 6px;
+    }
+
+    select,
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 12px;
+      font-size: 24px !important;
+      font-family: var(--font-main);
+      font-weight: 400;
+      color: var(--color-text);
+      background: var(--color-base);
+      border: 2px solid var(--color-border);
+      border-radius: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234b4642' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 24px;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+
+    select:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(72, 153, 129, 0.15);
+    }
+
+    select:disabled,
+    input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f0ede8;
+    }
+
+    input::placeholder {
+      color: #a09a94;
+      font-size: 20px !important;
+    }
+
+    .form-hint {
+      font-size: 15px;
+      color: var(--color-text-light);
+      margin-top: 6px;
+      margin-bottom: 0;
+      line-height: 1.6;
+      transition: opacity 0.2s, max-height 0.2s;
+    }
+
+    .form-hint.hidden {
+      opacity: 0;
+      max-height: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .form-hint.loading-hint {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    .form-hint.loading-hint::before {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--color-border);
+      border-top: 2px solid var(--color-accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    /* ボタン（フル幅） */
+    .btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px 12px;
+      font-size: 24px !important;
+      font-family: var(--font-main);
+      font-weight: 700;
+      color: #fff;
+      background: var(--color-accent);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 4px;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--color-accent-hover);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    /* エラーメッセージ */
+    .message {
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 22px !important;
+      font-weight: 700;
+      margin-top: 12px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      background: var(--color-error-bg);
+      color: var(--color-error);
+      border: 1px solid rgba(201, 124, 107, 0.3);
+    }
+
+    /* 結果セクション */
+    .result-section {
+      margin-top: 14px;
+      display: none;
+    }
+
+    .result-section.show {
+      display: block;
+    }
+
+    /* 結果ヘッダー（地域名を含む）- 枠線で差別化 */
+    .result-header {
+      background: #f5f0e8;
+      border: 3px solid var(--color-accent);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+
+    .result-header-title {
+      font-size: 26px !important;
+      font-weight: 700;
+      color: var(--color-text);
+      text-align: center;
+    }
+
+    .result-header-sub {
+      font-size: 18px !important;
+      color: var(--color-text-light);
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* 検索中ヘッダー */
+    .result-header.searching {
+      background: var(--color-air);
+      border-color: var(--color-accent-hover);
+    }
+
+    .result-header.searching .result-header-title {
+      color: var(--color-accent);
+    }
+
+    .searching-dots {
+      display: inline-block;
+    }
+
+    .searching-dots::after {
+      content: '';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0% {
+        content: '';
       }
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+      25% {
+        content: '.';
       }
 
+      50% {
+        content: '..';
+      }
+
+      75% {
+        content: '...';
+      }
+
+      100% {
+        content: '';
+      }
+    }
+
+    /* 凡例 */
+    .result-legend {
+      background: #f9f7f5;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--color-border);
+    }
+
+    .result-legend-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text-light);
+      margin-bottom: 8px;
+    }
+
+    .result-legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .result-legend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend-badge {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .legend-badge.available {
+      background: var(--color-air);
+      color: var(--color-accent);
+    }
+
+    .legend-badge.consult {
+      background: #fef3e6;
+      color: #c4873b;
+    }
+
+    .legend-badge.unavailable {
+      background: #f5f3f1;
+      color: #999;
+    }
+
+    .legend-desc {
+      color: var(--color-text);
+      padding-top: 2px;
+    }
+
+    /* 結果アイテム */
+    .result-item {
+      background: var(--color-base);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 10px;
+      border: 1px solid var(--color-border);
+    }
+
+    .result-item:last-child {
+      margin-bottom: 0;
+    }
+
+    /* サービス名（種別・カテゴリー統合） */
+    .result-service {
+      font-size: 22px !important;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* 状況表示 */
+    .result-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-status-label {
+      font-size: 18px !important;
+      color: var(--color-text-light);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* 判定バッジ */
+    .status-badge {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 22px !important;
+      font-weight: 700;
+    }
+
+    .status-badge.available {
+      background: var(--color-air);
+      color: var(--color-accent);
+    }
+
+    .status-badge.consult {
+      background: #fef3e6;
+      color: #c4873b;
+    }
+
+    .status-badge.unavailable {
+      background: #f5f3f1;
+      color: #999;
+    }
+
+    .status-badge.partial {
+      background: #e8f4f0;
+      color: #489981;
+    }
+
+    /* フッター */
+    .footer {
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .footer-text {
+      font-size: 17px !important;
+      color: var(--color-text-light);
+    }
+
+    .footer-link {
+      color: var(--color-accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    /* PC向け（768px以上） */
+    @media (min-width: 768px) {
       body {
-        font-family: var(--font-main);
-        font-size: 22px;
-        background: var(--color-base);
-        color: var(--color-text);
-        line-height: 1.5;
-        min-height: 100vh;
-        padding: 10px 8px 20px;
-        -webkit-font-smoothing: antialiased;
-        -webkit-text-size-adjust: 100%;
+        padding: 24px 20px 40px;
       }
 
-      /* ヘッダー */
-      .header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 10px;
-        padding: 6px 0;
-      }
-
-      .header svg {
-        width: 38px;
-        height: 38px;
-        color: var(--color-accent);
-        flex-shrink: 0;
-      }
-
-      .header h1 {
-        font-size: 30px;
-        font-weight: 700;
-      }
-
-      /* メインカード */
       .card {
-        background: var(--color-card);
-        border-radius: 14px;
-        box-shadow: 0 2px 10px rgba(75, 70, 66, 0.08);
-        padding: 14px 12px;
-        margin-bottom: 14px;
+        max-width: 640px;
+        margin: 0 auto 20px;
+        padding: 24px 20px;
       }
 
-      /* 2カラムレイアウト（スマホでは縦並び） */
       .form-row {
-        display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 16px;
-        margin-bottom: 12px;
       }
 
       .form-col {
-        width: 100%;
-        min-width: 0;
+        flex: 1;
+        width: auto;
       }
 
-      .form-label {
-        display: block;
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--color-text);
-        margin-bottom: 6px;
-      }
-
-      select,
-      input[type="text"] {
-        width: 100%;
-        padding: 14px 12px;
-        font-size: 24px !important;
-        font-family: var(--font-main);
-        font-weight: 400;
-        color: var(--color-text);
-        background: var(--color-base);
-        border: 2px solid var(--color-border);
-        border-radius: 10px;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        appearance: none;
-        -webkit-appearance: none;
-      }
-
-      select {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234b4642' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-        background-size: 24px;
-        padding-right: 40px;
-        cursor: pointer;
-      }
-
-      select:focus,
-      input[type="text"]:focus {
-        outline: none;
-        border-color: var(--color-accent);
-        box-shadow: 0 0 0 3px rgba(72, 153, 129, 0.15);
-      }
-
-      select:disabled,
-      input:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        background: #f0ede8;
-      }
-
-      input::placeholder {
-        color: #a09a94;
-        font-size: 20px !important;
-      }
-
-      .form-hint {
-        font-size: 15px;
-        color: var(--color-text-light);
-        margin-top: 6px;
-        margin-bottom: 0;
-        line-height: 1.6;
-        transition: opacity 0.2s, max-height 0.2s;
-      }
-
-      .form-hint.hidden {
-        opacity: 0;
-        max-height: 0;
-        margin: 0;
-        overflow: hidden;
-      }
-
-      .form-hint.loading-hint {
-        color: var(--color-accent);
-        font-weight: 700;
-      }
-
-      .form-hint.loading-hint::before {
-        content: '';
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border: 2px solid var(--color-border);
-        border-top: 2px solid var(--color-accent);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: 6px;
-        vertical-align: middle;
-      }
-
-      /* ボタン（フル幅） */
       .btn {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 16px 12px;
-        font-size: 24px !important;
-        font-family: var(--font-main);
-        font-weight: 700;
-        color: #fff;
-        background: var(--color-accent);
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.1s;
-        margin-top: 4px;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
       }
+    }
 
-      .btn:hover:not(:disabled) {
-        background: var(--color-accent-hover);
-      }
+    /* アニメーション */
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
 
-      .btn:active:not(:disabled) {
-        transform: scale(0.98);
-      }
-
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      .btn svg {
-        width: 26px;
-        height: 26px;
-      }
-
-      /* エラーメッセージ */
-      .message {
-        padding: 14px;
-        border-radius: 10px;
-        font-size: 22px !important;
-        font-weight: 700;
-        margin-top: 12px;
-        display: none;
-        line-height: 1.4;
-      }
-
-      .message.show {
-        display: block;
-      }
-
-      .message.error {
-        background: var(--color-error-bg);
-        color: var(--color-error);
-        border: 1px solid rgba(201, 124, 107, 0.3);
-      }
-
-      /* 結果セクション */
-      .result-section {
-        margin-top: 14px;
-        display: none;
-      }
-
-      .result-section.show {
-        display: block;
-      }
-
-      /* 結果ヘッダー（地域名を含む）- 枠線で差別化 */
-      .result-header {
-        background: #f5f0e8;
-        border: 3px solid var(--color-accent);
-        border-radius: 12px;
-        padding: 16px 18px;
-        margin-bottom: 14px;
-      }
-
-      .result-header-title {
-        font-size: 26px !important;
-        font-weight: 700;
-        color: var(--color-text);
-        text-align: center;
-      }
-
-      .result-header-sub {
-        font-size: 18px !important;
-        color: var(--color-text-light);
-        text-align: center;
-        margin-top: 4px;
-      }
-
-      /* 検索中ヘッダー */
-      .result-header.searching {
-        background: var(--color-air);
-        border-color: var(--color-accent-hover);
-      }
-
-      .result-header.searching .result-header-title {
-        color: var(--color-accent);
-      }
-
-      .searching-dots {
-        display: inline-block;
-      }
-
-      .searching-dots::after {
-        content: '';
-        animation: dots 1.5s steps(4, end) infinite;
-      }
-
-      @keyframes dots {
-        0% { content: ''; }
-        25% { content: '.'; }
-        50% { content: '..'; }
-        75% { content: '...'; }
-        100% { content: ''; }
-      }
-
-      /* 凡例 */
-      .result-legend {
-        background: #f9f7f5;
-        border-radius: 8px;
-        padding: 12px 14px;
-        margin-bottom: 14px;
-        border: 1px solid var(--color-border);
-      }
-
-      .result-legend-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--color-text-light);
-        margin-bottom: 8px;
-      }
-
-      .result-legend-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        margin-bottom: 6px;
-        font-size: 14px;
-        line-height: 1.5;
-      }
-
-      .result-legend-item:last-child {
-        margin-bottom: 0;
-      }
-
-      .legend-badge {
-        flex-shrink: 0;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 13px;
-        font-weight: 700;
-        min-width: 70px;
-        text-align: center;
-      }
-
-      .legend-badge.available {
-        background: var(--color-air);
-        color: var(--color-accent);
-      }
-
-      .legend-badge.consult {
-        background: #fef3e6;
-        color: #c4873b;
-      }
-
-      .legend-badge.unavailable {
-        background: #f5f3f1;
-        color: #999;
-      }
-
-      .legend-desc {
-        color: var(--color-text);
-        padding-top: 2px;
-      }
-
-      /* 結果アイテム */
-      .result-item {
-        background: var(--color-base);
-        border-radius: 10px;
-        padding: 16px;
-        margin-bottom: 10px;
-        border: 1px solid var(--color-border);
-      }
-
-      .result-item:last-child {
-        margin-bottom: 0;
-      }
-
-      /* サービス名（種別・カテゴリー統合） */
-      .result-service {
-        font-size: 22px !important;
-        font-weight: 700;
-        color: var(--color-text);
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid var(--color-border);
-      }
-
-      /* 状況表示 */
-      .result-status {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .result-status-label {
-        font-size: 18px !important;
-        color: var(--color-text-light);
-        font-weight: 700;
-        flex-shrink: 0;
-      }
-
-      /* 判定バッジ */
-      .status-badge {
-        display: inline-block;
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-size: 22px !important;
-        font-weight: 700;
-      }
-
-      .status-badge.available {
-        background: var(--color-air);
-        color: var(--color-accent);
-      }
-
-      .status-badge.consult {
-        background: #fef3e6;
-        color: #c4873b;
-      }
-
-      .status-badge.unavailable {
-        background: #f5f3f1;
-        color: #999;
-      }
-
-      .status-badge.partial {
-        background: #e8f4f0;
-        color: #489981;
-      }
-
-      /* フッター */
-      .footer {
-        text-align: center;
-        padding: 8px 0;
-      }
-
-      .footer-text {
-        font-size: 17px !important;
-        color: var(--color-text-light);
-      }
-
-      .footer-link {
-        color: var(--color-accent);
-        text-decoration: none;
-        font-weight: 700;
-      }
-
-      /* PC向け（768px以上） */
-      @media (min-width: 768px) {
-        body {
-          padding: 24px 20px 40px;
-        }
-
-        .card {
-          max-width: 640px;
-          margin: 0 auto 20px;
-          padding: 24px 20px;
-        }
-
-        .form-row {
-          flex-direction: row;
-          gap: 16px;
-        }
-
-        .form-col {
-          flex: 1;
-          width: auto;
-        }
-
-        .btn {
-          max-width: 300px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-      }
-
-      /* アニメーション */
-      .fade-in {
-        animation: fadeIn 0.3s ease forwards;
-      }
-
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(4px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      /* ローディング表示 */
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(250, 245, 240, 0.95);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        transition: opacity 0.3s;
-      }
-
-      .loading-overlay.hidden {
+    @keyframes fadeIn {
+      from {
         opacity: 0;
-        pointer-events: none;
+        transform: translateY(4px);
       }
 
-      .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid var(--color-border);
-        border-top: 4px solid var(--color-accent);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ローディング表示 */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(250, 245, 240, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--color-border);
+      border-top: 4px solid var(--color-accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
       }
 
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+      100% {
+        transform: rotate(360deg);
       }
+    }
 
-      .loading-text {
-        margin-top: 20px;
-        font-size: 18px;
-        color: var(--color-text);
-        font-weight: 700;
-      }
+    .loading-text {
+      margin-top: 20px;
+      font-size: 18px;
+      color: var(--color-text);
+      font-weight: 700;
+    }
 
-      .loading-subtext {
-        margin-top: 8px;
-        font-size: 15px;
-        color: var(--color-text-light);
-      }
+    .loading-subtext {
+      margin-top: 8px;
+      font-size: 15px;
+      color: var(--color-text-light);
+    }
 
-      .loading-error {
-        max-width: 400px;
-        text-align: center;
-        padding: 20px;
-      }
+    .loading-error {
+      max-width: 400px;
+      text-align: center;
+      padding: 20px;
+    }
 
-      .loading-error-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--color-error);
-        margin-bottom: 12px;
-      }
+    .loading-error-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-error);
+      margin-bottom: 12px;
+    }
 
-      .loading-error-message {
-        font-size: 16px;
-        color: var(--color-text);
-        margin-bottom: 20px;
-        line-height: 1.6;
-      }
+    .loading-error-message {
+      font-size: 16px;
+      color: var(--color-text);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
 
-      .retry-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        font-size: 18px;
-        font-family: var(--font-main);
-        font-weight: 700;
-        color: #fff;
-        background: var(--color-accent);
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
+    .retry-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 18px;
+      font-family: var(--font-main);
+      font-weight: 700;
+      color: #fff;
+      background: var(--color-accent);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-      .retry-btn:hover {
-        background: var(--color-accent-hover);
-      }
-    </style>
-  </head>
+    .retry-btn:hover {
+      background: var(--color-accent-hover);
+    }
+  </style>
+</head>
 
-  <body>
-    <!-- ローディングオーバーレイ（確認ボタン押下時のみ表示） -->
-    <div id="loadingOverlay" class="loading-overlay hidden" style="display: none;">
-      <div id="loadingContent">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">データを読み込んでいます</div>
-        <div class="loading-subtext">しばらくお待ちください...</div>
-      </div>
+<body>
+  <!-- ローディングオーバーレイ（確認ボタン押下時のみ表示） -->
+  <div id="loadingOverlay" class="loading-overlay hidden" style="display: none;">
+    <div id="loadingContent">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">データを読み込んでいます</div>
+      <div class="loading-subtext">しばらくお待ちください...</div>
     </div>
+  </div>
 
-    <div class="container">
-      <!-- ヘッダー -->
-      <header class="header">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-        <h1>対応エリア確認</h1>
-      </header>
+  <div class="container">
+    <!-- ヘッダー -->
+    <header class="header">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <h1>対応エリア確認</h1>
+    </header>
 
-      <!-- メインカード -->
-      <main class="card">
-        <!-- 1段目：都道府県 + 市区町村 -->
-        <div class="form-row">
-          <div class="form-col">
-            <label class="form-label" for="pref">都道府県</label>
-            <select id="pref">
-              <option value="">選択</option>
-              <option value="北海道">北海道</option>
-              <option value="青森県">青森県</option>
-              <option value="岩手県">岩手県</option>
-              <option value="宮城県">宮城県</option>
-              <option value="秋田県">秋田県</option>
-              <option value="山形県">山形県</option>
-              <option value="福島県">福島県</option>
-              <option value="茨城県">茨城県</option>
-              <option value="栃木県">栃木県</option>
-              <option value="群馬県">群馬県</option>
-              <option value="埼玉県">埼玉県</option>
-              <option value="千葉県">千葉県</option>
-              <option value="東京都">東京都</option>
-              <option value="神奈川県">神奈川県</option>
-              <option value="新潟県">新潟県</option>
-              <option value="富山県">富山県</option>
-              <option value="石川県">石川県</option>
-              <option value="福井県">福井県</option>
-              <option value="山梨県">山梨県</option>
-              <option value="長野県">長野県</option>
-              <option value="岐阜県">岐阜県</option>
-              <option value="静岡県">静岡県</option>
-              <option value="愛知県">愛知県</option>
-              <option value="三重県">三重県</option>
-              <option value="滋賀県">滋賀県</option>
-              <option value="京都府">京都府</option>
-              <option value="大阪府">大阪府</option>
-              <option value="兵庫県">兵庫県</option>
-              <option value="奈良県">奈良県</option>
-              <option value="和歌山県">和歌山県</option>
-              <option value="鳥取県">鳥取県</option>
-              <option value="島根県">島根県</option>
-              <option value="岡山県">岡山県</option>
-              <option value="広島県">広島県</option>
-              <option value="山口県">山口県</option>
-              <option value="徳島県">徳島県</option>
-              <option value="香川県">香川県</option>
-              <option value="愛媛県">愛媛県</option>
-              <option value="高知県">高知県</option>
-              <option value="福岡県">福岡県</option>
-              <option value="佐賀県">佐賀県</option>
-              <option value="長崎県">長崎県</option>
-              <option value="熊本県">熊本県</option>
-              <option value="大分県">大分県</option>
-              <option value="宮崎県">宮崎県</option>
-              <option value="鹿児島県">鹿児島県</option>
-              <option value="沖縄県">沖縄県</option>
-            </select>
-          </div>
-          <div class="form-col">
-            <label class="form-label" for="muni">市区町村</label>
-            <input
-              id="muni"
-              type="text"
-              list="muniList"
-              placeholder="データ読み込み中..."
-              autocomplete="off"
-            />
-            <datalist id="muniList"></datalist>
-            <p id="muniHint" class="form-hint loading-hint">※ エリアデータを読み込んでいます...</p>
-          </div>
+    <!-- メインカード -->
+    <main class="card">
+      <!-- 1段目：都道府県 + 市区町村 -->
+      <div class="form-row">
+        <div class="form-col">
+          <label class="form-label" for="pref">都道府県</label>
+          <select id="pref">
+            <option value="">選択</option>
+            <option value="北海道">北海道</option>
+            <option value="青森県">青森県</option>
+            <option value="岩手県">岩手県</option>
+            <option value="宮城県">宮城県</option>
+            <option value="秋田県">秋田県</option>
+            <option value="山形県">山形県</option>
+            <option value="福島県">福島県</option>
+            <option value="茨城県">茨城県</option>
+            <option value="栃木県">栃木県</option>
+            <option value="群馬県">群馬県</option>
+            <option value="埼玉県">埼玉県</option>
+            <option value="千葉県">千葉県</option>
+            <option value="東京都">東京都</option>
+            <option value="神奈川県">神奈川県</option>
+            <option value="新潟県">新潟県</option>
+            <option value="富山県">富山県</option>
+            <option value="石川県">石川県</option>
+            <option value="福井県">福井県</option>
+            <option value="山梨県">山梨県</option>
+            <option value="長野県">長野県</option>
+            <option value="岐阜県">岐阜県</option>
+            <option value="静岡県">静岡県</option>
+            <option value="愛知県">愛知県</option>
+            <option value="三重県">三重県</option>
+            <option value="滋賀県">滋賀県</option>
+            <option value="京都府">京都府</option>
+            <option value="大阪府">大阪府</option>
+            <option value="兵庫県">兵庫県</option>
+            <option value="奈良県">奈良県</option>
+            <option value="和歌山県">和歌山県</option>
+            <option value="鳥取県">鳥取県</option>
+            <option value="島根県">島根県</option>
+            <option value="岡山県">岡山県</option>
+            <option value="広島県">広島県</option>
+            <option value="山口県">山口県</option>
+            <option value="徳島県">徳島県</option>
+            <option value="香川県">香川県</option>
+            <option value="愛媛県">愛媛県</option>
+            <option value="高知県">高知県</option>
+            <option value="福岡県">福岡県</option>
+            <option value="佐賀県">佐賀県</option>
+            <option value="長崎県">長崎県</option>
+            <option value="熊本県">熊本県</option>
+            <option value="大分県">大分県</option>
+            <option value="宮崎県">宮崎県</option>
+            <option value="鹿児島県">鹿児島県</option>
+            <option value="沖縄県">沖縄県</option>
+          </select>
         </div>
+        <div class="form-col">
+          <label class="form-label" for="muni">市区町村</label>
+          <input id="muni" type="text" list="muniList" placeholder="データ読み込み中..." autocomplete="off" />
+          <datalist id="muniList"></datalist>
+          <p id="muniHint" class="form-hint loading-hint">※ エリアデータを読み込んでいます...</p>
+        </div>
+      </div>
 
-        <!-- 2段目：確認ボタンのみ -->
-        <button id="btn" class="btn" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          確認する
-        </button>
+      <!-- 2段目：確認ボタンのみ -->
+      <button id="btn" class="btn" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        確認する
+      </button>
 
-        <!-- エラーメッセージ -->
-        <div id="msg" class="message"></div>
+      <!-- エラーメッセージ -->
+      <div id="msg" class="message"></div>
 
-        <!-- 結果表示 -->
-        <div id="result" class="result-section"></div>
-      </main>
+      <!-- 結果表示 -->
+      <div id="result" class="result-section"></div>
+    </main>
 
-      <!-- フッター -->
-      <footer class="footer">
-        <p class="footer-text">
-          ご不明な点は<a id="contactLink" href="#" class="footer-link">お問い合わせ</a>ください
-        </p>
-      </footer>
-    </div>
+    <!-- フッター -->
+    <footer class="footer">
+      <p class="footer-text">
+        ご不明な点は<a id="contactLink" href="#" class="footer-link">お問い合わせ</a>ください
+      </p>
+    </footer>
+  </div>
 
-    <script>
-      // ==================== 設定 ====================
-      const CONFIG = {
-        CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv',
-        CONTACT_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSeqtoxMGXGZEHZ9x2QbNUdb7g--Fb-yoxjU5VKbuMT5TmJIvw/viewform',
-        HEADER_PROVIDER_ROW: 2,
-        HEADER_CATEGORY_ROW: 3,
-        DATA_START_ROW: 4,
-        FIRST_JUDGE_COL: 4,
-        SUGGEST_LIMIT: 30
-      };
+  <script>
+    // ==================== 設定 ====================
+    const CONFIG = {
+      CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv',
+      CONTACT_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSeqtoxMGXGZEHZ9x2QbNUdb7g--Fb-yoxjU5VKbuMT5TmJIvw/viewform',
+      HEADER_PROVIDER_ROW: 2,
+      HEADER_CATEGORY_ROW: 3,
+      DATA_START_ROW: 4,
+      FIRST_JUDGE_COL: 4,
+      SUGGEST_LIMIT: 30
+    };
 
-      // ==================== グローバルデータ ====================
-      const appData = {
-        table: [],              // 2次元配列（CSVデータ全体）
-        providers: [],          // プロバイダー種別（2行目 D列以降）
-        categories: [],         // カテゴリ（3行目 D列以降）
-        rowsByPref: new Map(),  // 都道府県別インデックス
-        isReady: false          // データ準備完了フラグ
-      };
+    // ==================== グローバルデータ ====================
+    const appData = {
+      table: [],              // 2次元配列（CSVデータ全体）
+      providers: [],          // プロバイダー種別（2行目 D列以降）
+      categories: [],         // カテゴリ（3行目 D列以降）
+      rowsByPref: new Map(),  // 都道府県別インデックス
+      isReady: false          // データ準備完了フラグ
+    };
 
-      // データ準備完了を待つためのPromise
-      let dataReadyResolve = null;
-      const dataReadyPromise = new Promise(resolve => {
-        dataReadyResolve = resolve;
-      });
+    // データ準備完了を待つためのPromise
+    let dataReadyResolve = null;
+    const dataReadyPromise = new Promise(resolve => {
+      dataReadyResolve = resolve;
+    });
 
-      // ==================== DOM要素の取得 ====================
-      const elPref = document.getElementById("pref");
-      const elMuni = document.getElementById("muni");
-      const elMuniList = document.getElementById("muniList");
-      const elBtn = document.getElementById("btn");
-      const elMsg = document.getElementById("msg");
-      const elResult = document.getElementById("result");
-      const elContactLink = document.getElementById("contactLink");
-      const elMuniHint = document.getElementById("muniHint");
-      const elLoadingOverlay = document.getElementById("loadingOverlay");
-      const elLoadingContent = document.getElementById("loadingContent");
+    // ==================== DOM要素の取得 ====================
+    const elPref = document.getElementById("pref");
+    const elMuni = document.getElementById("muni");
+    const elMuniList = document.getElementById("muniList");
+    const elBtn = document.getElementById("btn");
+    const elMsg = document.getElementById("msg");
+    const elResult = document.getElementById("result");
+    const elContactLink = document.getElementById("contactLink");
+    const elMuniHint = document.getElementById("muniHint");
+    const elLoadingOverlay = document.getElementById("loadingOverlay");
+    const elLoadingContent = document.getElementById("loadingContent");
 
-      let suggestTimer = null;
-      let loadingTimeout = null;
+    let suggestTimer = null;
+    let loadingTimeout = null;
 
-      // ==================== カテゴリー名の変換マップ ====================
-      const categoryNameMap = {
-        "大規模": "大規模リフォーム",
-        "小規模": "小規模リフォーム"
-      };
+    // ==================== カテゴリー名の変換マップ ====================
+    const categoryNameMap = {
+      "大規模": "大規模リフォーム",
+      "小規模": "小規模リフォーム"
+    };
 
-      // ==================== ユーティリティ関数 ====================
+    // ==================== ユーティリティ関数 ====================
 
-      // カテゴリー名を変換
-      function formatCategoryName(category) {
-        if (!category) return "";
-        return categoryNameMap[category] || category;
+    // カテゴリー名を変換
+    function formatCategoryName(category) {
+      if (!category) return "";
+      return categoryNameMap[category] || category;
+    }
+
+    // メッセージ表示（エラーのみ）
+    function setMsg(text, kind) {
+      elMsg.className = "message";
+      if (text && kind === "error") {
+        elMsg.classList.add("show", "error");
+        elMsg.textContent = text;
       }
+    }
 
-      // メッセージ表示（エラーのみ）
-      function setMsg(text, kind) {
-        elMsg.className = "message";
-        if (text && kind === "error") {
-          elMsg.classList.add("show", "error");
-          elMsg.textContent = text;
-        }
-      }
+    // 結果クリア
+    function clearResult() {
+      elResult.innerHTML = "";
+      elResult.classList.remove("show");
+    }
 
-      // 結果クリア
-      function clearResult() {
-        elResult.innerHTML = "";
-        elResult.classList.remove("show");
-      }
+    // 入力無効化
+    function setBusy(isBusy) {
+      elBtn.disabled = isBusy;
+      elPref.disabled = isBusy;
+      elMuni.disabled = isBusy;
+    }
 
-      // 入力無効化
-      function setBusy(isBusy) {
-        elBtn.disabled = isBusy;
-        elPref.disabled = isBusy;
-        elMuni.disabled = isBusy;
-      }
+    // 検索中UI表示
+    function showSearching(pref, muni) {
+      clearResult();
 
-      // 検索中UI表示
-      function showSearching(pref, muni) {
-        clearResult();
-
-        const header = document.createElement("div");
-        header.className = "result-header searching";
-        header.id = "resultHeader";
-        header.innerHTML = `
+      const header = document.createElement("div");
+      header.className = "result-header searching";
+      header.id = "resultHeader";
+      header.innerHTML = `
           <div class="result-header-title">検索中<span class="searching-dots"></span></div>
           <div class="result-header-sub">${pref} ${muni}</div>
         `;
-        elResult.appendChild(header);
-        elResult.classList.add("show");
-      }
+      elResult.appendChild(header);
+      elResult.classList.add("show");
+    }
 
-      // 判定値のスタイル判定
-      function getStatusClass(value) {
-        if (!value || value === "" || value === "—") return "unavailable";
-        if (value.includes("要相談")) return "consult";
-        if (value.includes("一部") || value.includes("除く")) return "partial";
-        if (value === "○" || value.includes("対応")) return "available";
-        return "unavailable";
-      }
+    // 判定値のスタイル判定
+    function getStatusClass(value) {
+      if (!value || value === "" || value === "—") return "unavailable";
+      if (value.includes("要相談")) return "consult";
+      if (value.includes("一部") || value.includes("除く")) return "partial";
+      if (value === "○" || value.includes("対応")) return "available";
+      return "unavailable";
+    }
 
-      // 判定値の表示テキスト
-      function getStatusText(value) {
-        if (!value || value === "") return "対応エリア外";
-        return value;
-      }
+    // 判定値の表示テキスト
+    function getStatusText(value) {
+      if (!value || value === "") return "対応エリア外";
+      return value;
+    }
 
-      // ローディング表示制御
-      function showLoading() {
-        if (elLoadingOverlay) {
-          elLoadingOverlay.style.display = "flex";
-          elLoadingOverlay.classList.remove("hidden");
-          // ローディングコンテンツをリセット
-          if (elLoadingContent) {
-            elLoadingContent.innerHTML = `
+    // ローディング表示制御
+    function showLoading() {
+      if (elLoadingOverlay) {
+        elLoadingOverlay.style.display = "flex";
+        elLoadingOverlay.classList.remove("hidden");
+        // ローディングコンテンツをリセット
+        if (elLoadingContent) {
+          elLoadingContent.innerHTML = `
               <div class="loading-spinner"></div>
               <div class="loading-text">データを読み込んでいます</div>
               <div class="loading-subtext">しばらくお待ちください...</div>
             `;
-          }
         }
       }
+    }
 
-      function hideLoading() {
-        if (loadingTimeout) {
-          clearTimeout(loadingTimeout);
-          loadingTimeout = null;
-        }
-        if (elLoadingOverlay) {
-          elLoadingOverlay.classList.add("hidden");
-          setTimeout(() => {
-            elLoadingOverlay.style.display = "none";
-          }, 300);
-        }
+    function hideLoading() {
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
       }
+      if (elLoadingOverlay) {
+        elLoadingOverlay.classList.add("hidden");
+        setTimeout(() => {
+          elLoadingOverlay.style.display = "none";
+        }, 300);
+      }
+    }
 
-      function showLoadingError() {
-        if (elLoadingContent) {
-          elLoadingContent.innerHTML = `
+    function showLoadingError() {
+      if (elLoadingContent) {
+        elLoadingContent.innerHTML = `
             <div class="loading-error">
               <div class="loading-error-title">読み込みに時間がかかっています</div>
               <div class="loading-error-message">
@@ -847,347 +870,347 @@
               </button>
             </div>
           `;
+      }
+    }
+
+    // ==================== キャッシュ設定 ====================
+    const CACHE_KEY = 'libe_koumu_csv_cache';
+    const CACHE_TIMESTAMP_KEY = 'libe_koumu_csv_timestamp';
+    const CACHE_EXPIRE_MS = 5 * 60 * 1000; // 5分でキャッシュ更新を試みる
+
+    // ==================== CSV読み込みと解析 ====================
+
+    // CSVテキストを解析してアプリデータを構築
+    function parseAndBuildData(csvText) {
+      const parsed = Papa.parse(csvText, {
+        skipEmptyLines: false
+      });
+
+      appData.table = parsed.data;
+
+      // ヘッダ読み取り（2行目・3行目）
+      const providerRow = appData.table[CONFIG.HEADER_PROVIDER_ROW - 1];
+      const categoryRow = appData.table[CONFIG.HEADER_CATEGORY_ROW - 1];
+
+      // D列以降を取得（index 3以降）
+      appData.providers = providerRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
+      appData.categories = categoryRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
+
+      // インデックス構築
+      buildIndex();
+    }
+
+    // キャッシュからデータを読み込む
+    function loadFromCache() {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          return cached;
         }
+      } catch (e) {
+        console.warn('キャッシュ読み込みエラー:', e);
       }
+      return null;
+    }
 
-      // ==================== キャッシュ設定 ====================
-      const CACHE_KEY = 'libe_koumu_csv_cache';
-      const CACHE_TIMESTAMP_KEY = 'libe_koumu_csv_timestamp';
-      const CACHE_EXPIRE_MS = 5 * 60 * 1000; // 5分でキャッシュ更新を試みる
-
-      // ==================== CSV読み込みと解析 ====================
-
-      // CSVテキストを解析してアプリデータを構築
-      function parseAndBuildData(csvText) {
-        const parsed = Papa.parse(csvText, {
-          skipEmptyLines: false
-        });
-
-        appData.table = parsed.data;
-
-        // ヘッダ読み取り（2行目・3行目）
-        const providerRow = appData.table[CONFIG.HEADER_PROVIDER_ROW - 1];
-        const categoryRow = appData.table[CONFIG.HEADER_CATEGORY_ROW - 1];
-
-        // D列以降を取得（index 3以降）
-        appData.providers = providerRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
-        appData.categories = categoryRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
-
-        // インデックス構築
-        buildIndex();
+    // キャッシュにデータを保存
+    function saveToCache(csvText) {
+      try {
+        localStorage.setItem(CACHE_KEY, csvText);
+        localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+      } catch (e) {
+        console.warn('キャッシュ保存エラー:', e);
       }
+    }
 
-      // キャッシュからデータを読み込む
-      function loadFromCache() {
-        try {
-          const cached = localStorage.getItem(CACHE_KEY);
-          if (cached) {
-            return cached;
-          }
-        } catch (e) {
-          console.warn('キャッシュ読み込みエラー:', e);
-        }
-        return null;
+    // キャッシュが古いかチェック
+    function isCacheStale() {
+      try {
+        const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+        if (!timestamp) return true;
+        return (Date.now() - parseInt(timestamp, 10)) > CACHE_EXPIRE_MS;
+      } catch (e) {
+        return true;
       }
+    }
 
-      // キャッシュにデータを保存
-      function saveToCache(csvText) {
-        try {
-          localStorage.setItem(CACHE_KEY, csvText);
-          localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
-        } catch (e) {
-          console.warn('キャッシュ保存エラー:', e);
-        }
-      }
+    async function loadAndParseCSV() {
+      try {
+        // 1. まずキャッシュから読み込みを試みる（即座にデータ準備）
+        const cachedCSV = loadFromCache();
 
-      // キャッシュが古いかチェック
-      function isCacheStale() {
-        try {
-          const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-          if (!timestamp) return true;
-          return (Date.now() - parseInt(timestamp, 10)) > CACHE_EXPIRE_MS;
-        } catch (e) {
-          return true;
-        }
-      }
-
-      async function loadAndParseCSV() {
-        try {
-          // 1. まずキャッシュから読み込みを試みる（即座にデータ準備）
-          const cachedCSV = loadFromCache();
-
-          if (cachedCSV) {
-            try {
-              parseAndBuildData(cachedCSV);
-              appData.isReady = true;
-              dataReadyResolve();
-              onDataReady();
-              console.log('キャッシュからデータを読み込みました');
-            } catch (e) {
-              console.warn('キャッシュデータの解析に失敗:', e);
-            }
-          }
-
-          // 2. バックグラウンドで最新データを取得（UIをブロックしない）
-          let csvText = null;
-
-          if (window.__csvFetchPromise) {
-            // 既に開始済みのfetchを待つ
-            csvText = await window.__csvFetchPromise;
-            if (window.__csvFetchError) {
-              throw new Error(window.__csvFetchError);
-            }
-          }
-
-          if (!csvText) {
-            // フォールバック：再度fetchを実行
-            const controller = new AbortController();
-            const fetchTimeout = setTimeout(() => controller.abort(), 60000);
-
-            const response = await fetch(CONFIG.CSV_URL, {
-              signal: controller.signal
-            });
-            clearTimeout(fetchTimeout);
-
-            if (!response.ok) throw new Error('CSV取得失敗');
-            csvText = await response.text();
-          }
-
-          // 3. キャッシュを更新
-          saveToCache(csvText);
-
-          // 4. データを構築
-          if (!appData.isReady) {
-            // 初回：データを構築して準備完了
-            parseAndBuildData(csvText);
+        if (cachedCSV) {
+          try {
+            parseAndBuildData(cachedCSV);
             appData.isReady = true;
             dataReadyResolve();
             onDataReady();
-            console.log('ネットワークからデータを読み込みました');
-          } else if (cachedCSV !== csvText) {
-            // キャッシュと異なる場合：データを更新
-            parseAndBuildData(csvText);
-            console.log('バックグラウンドでデータを更新しました');
+            console.log('キャッシュからデータを読み込みました');
+          } catch (e) {
+            console.warn('キャッシュデータの解析に失敗:', e);
           }
-
-        } catch (error) {
-          console.error(error);
-
-          // キャッシュから読み込み済みなら、エラーは警告程度に
-          if (appData.isReady) {
-            console.warn('ネットワークエラーですが、キャッシュデータで動作中');
-            return;
-          }
-
-          // データがない場合はエラーを記録（確認ボタン押下時にエラー表示）
-          appData.loadError = error;
-          dataReadyResolve(); // エラーでもPromiseを解決して待機を終了
         }
-      }
 
-      // インデックス構築（都道府県別Map）
-      function buildIndex() {
-        appData.rowsByPref = new Map();
+        // 2. バックグラウンドで最新データを取得（UIをブロックしない）
+        let csvText = null;
 
-        for (let i = CONFIG.DATA_START_ROW - 1; i < appData.table.length; i++) {
-          const row = appData.table[i];
-          const pref = row[0]?.trim();
-          const muni = row[1]?.trim();
-          const kana = row[2]?.trim();
-
-          if (!pref || !muni) continue;
-
-          if (!appData.rowsByPref.has(pref)) {
-            appData.rowsByPref.set(pref, []);
+        if (window.__csvFetchPromise) {
+          // 既に開始済みのfetchを待つ
+          csvText = await window.__csvFetchPromise;
+          if (window.__csvFetchError) {
+            throw new Error(window.__csvFetchError);
           }
+        }
 
-          appData.rowsByPref.get(pref).push({
-            muni,
-            kana,
-            rowIndex: i + 1,
-            rowData: row
+        if (!csvText) {
+          // フォールバック：再度fetchを実行
+          const controller = new AbortController();
+          const fetchTimeout = setTimeout(() => controller.abort(), 60000);
+
+          const response = await fetch(CONFIG.CSV_URL, {
+            signal: controller.signal
           });
-        }
-      }
+          clearTimeout(fetchTimeout);
 
-      // ==================== UI初期化 ====================
-
-      function initializeUI() {
-        // お問い合わせリンク設定
-        elContactLink.href = CONFIG.CONTACT_URL;
-        elContactLink.target = "_blank";
-      }
-
-      // データ読み込み完了時のUI更新
-      function onDataReady() {
-        // placeholderを更新
-        elMuni.placeholder = "候補から選択";
-
-        // ヒントを更新（ローディング表示を解除）
-        if (elMuniHint) {
-          elMuniHint.classList.remove("loading-hint");
-          elMuniHint.textContent = "※ ひらがなを数文字入力すると候補が絞り込めます";
-        }
-      }
-
-      // ==================== サジェスト ====================
-
-      // 市区町村候補取得（部分一致）
-      function suggestMunicipalities(pref, query) {
-        if (!pref) return [];
-
-        const rows = appData.rowsByPref.get(pref) || [];
-        const queryLower = query.toLowerCase();
-        const results = [];
-        const seen = new Set();
-
-        for (const row of rows) {
-          if (seen.has(row.muni)) continue;
-
-          const muniMatch = row.muni.toLowerCase().includes(queryLower);
-          const kanaMatch = row.kana.toLowerCase().includes(queryLower);
-
-          if (muniMatch || kanaMatch) {
-            results.push({
-              muni: row.muni,
-              kana: row.kana
-            });
-            seen.add(row.muni);
-
-            if (results.length >= CONFIG.SUGGEST_LIMIT) break;
-          }
+          if (!response.ok) throw new Error('CSV取得失敗');
+          csvText = await response.text();
         }
 
-        return results;
-      }
+        // 3. キャッシュを更新
+        saveToCache(csvText);
 
-      // サジェスト描画
-      function renderSuggest(list) {
-        elMuniList.innerHTML = "";
-        (list || []).forEach(item => {
-          const opt = document.createElement("option");
-          opt.value = item.muni || "";
-          if (item.kana) opt.label = item.kana;
-          elMuniList.appendChild(opt);
-        });
-      }
+        // 4. データを構築
+        if (!appData.isReady) {
+          // 初回：データを構築して準備完了
+          parseAndBuildData(csvText);
+          appData.isReady = true;
+          dataReadyResolve();
+          onDataReady();
+          console.log('ネットワークからデータを読み込みました');
+        } else if (cachedCSV !== csvText) {
+          // キャッシュと異なる場合：データを更新
+          parseAndBuildData(csvText);
+          console.log('バックグラウンドでデータを更新しました');
+        }
 
-      // サジェストリクエスト
-      function requestSuggest() {
-        const pref = elPref.value;
-        const q = elMuni.value;
+      } catch (error) {
+        console.error(error);
 
-        if (!pref) {
-          renderSuggest([]);
+        // キャッシュから読み込み済みなら、エラーは警告程度に
+        if (appData.isReady) {
+          console.warn('ネットワークエラーですが、キャッシュデータで動作中');
           return;
         }
 
-        const list = suggestMunicipalities(pref, q);
-        renderSuggest(list);
+        // データがない場合はエラーを記録（確認ボタン押下時にエラー表示）
+        appData.loadError = error;
+        dataReadyResolve(); // エラーでもPromiseを解決して待機を終了
       }
+    }
 
-      // デバウンス処理
-      function debounceSuggest() {
-        clearTimeout(suggestTimer);
-        suggestTimer = setTimeout(requestSuggest, 200);
-      }
+    // インデックス構築（都道府県別Map）
+    function buildIndex() {
+      appData.rowsByPref = new Map();
 
-      // ==================== バリデーション ====================
+      for (let i = CONFIG.DATA_START_ROW - 1; i < appData.table.length; i++) {
+        const row = appData.table[i];
+        const pref = row[0]?.trim();
+        const muni = row[1]?.trim();
+        const kana = row[2]?.trim();
 
-      function validateInput(pref, muni) {
-        if (!pref) {
-          return { ok: false, message: '都道府県を選択してください' };
+        if (!pref || !muni) continue;
+
+        if (!appData.rowsByPref.has(pref)) {
+          appData.rowsByPref.set(pref, []);
         }
 
-        if (!muni) {
-          return { ok: false, message: '市区町村を入力してください' };
-        }
-
-        const rows = appData.rowsByPref.get(pref) || [];
-        const exists = rows.some(row => row.muni === muni);
-
-        if (!exists) {
-          return {
-            ok: false,
-            message: '市区町村は候補（プルダウン）から選択してください'
-          };
-        }
-
-        return { ok: true };
-      }
-
-      // ==================== 判定処理 ====================
-
-      function getJudgement(pref, muni) {
-        const rows = appData.rowsByPref.get(pref) || [];
-        const matches = rows.filter(row => row.muni === muni);
-
-        if (matches.length === 0) {
-          return {
-            ok: false,
-            message: '該当する市区町村が見つかりませんでした'
-          };
-        }
-
-        if (matches.length > 1) {
-          return {
-            ok: false,
-            message: '同一の都道府県×市区町村が複数行に存在します（データ重複）'
-          };
-        }
-
-        const targetRow = matches[0];
-        const values = targetRow.rowData.slice(CONFIG.FIRST_JUDGE_COL - 1);
-
-        const items = [];
-        for (let i = 0; i < values.length; i++) {
-          const provider = appData.providers[i];
-          const category = appData.categories[i];
-          const value = values[i];
-
-          if (!provider || !category) continue;
-
-          items.push({
-            provider: provider.trim(),
-            category: category.trim(),
-            value: value ? value.trim() : ''
-          });
-        }
-
-        return {
-          ok: true,
-          pref,
+        appData.rowsByPref.get(pref).push({
           muni,
-          items
+          kana,
+          rowIndex: i + 1,
+          rowData: row
+        });
+      }
+    }
+
+    // ==================== UI初期化 ====================
+
+    function initializeUI() {
+      // お問い合わせリンク設定
+      elContactLink.href = CONFIG.CONTACT_URL;
+      elContactLink.target = "_blank";
+    }
+
+    // データ読み込み完了時のUI更新
+    function onDataReady() {
+      // placeholderを更新
+      elMuni.placeholder = "候補から選択";
+
+      // ヒントを更新（ローディング表示を解除）
+      if (elMuniHint) {
+        elMuniHint.classList.remove("loading-hint");
+        elMuniHint.textContent = "※ ひらがなを数文字入力すると候補が絞り込めます";
+      }
+    }
+
+    // ==================== サジェスト ====================
+
+    // 市区町村候補取得（部分一致）
+    function suggestMunicipalities(pref, query) {
+      if (!pref) return [];
+
+      const rows = appData.rowsByPref.get(pref) || [];
+      const queryLower = query.toLowerCase();
+      const results = [];
+      const seen = new Set();
+
+      for (const row of rows) {
+        if (seen.has(row.muni)) continue;
+
+        const muniMatch = row.muni.toLowerCase().includes(queryLower);
+        const kanaMatch = row.kana.toLowerCase().includes(queryLower);
+
+        if (muniMatch || kanaMatch) {
+          results.push({
+            muni: row.muni,
+            kana: row.kana
+          });
+          seen.add(row.muni);
+
+          if (results.length >= CONFIG.SUGGEST_LIMIT) break;
+        }
+      }
+
+      return results;
+    }
+
+    // サジェスト描画
+    function renderSuggest(list) {
+      elMuniList.innerHTML = "";
+      (list || []).forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.muni || "";
+        if (item.kana) opt.label = item.kana;
+        elMuniList.appendChild(opt);
+      });
+    }
+
+    // サジェストリクエスト
+    function requestSuggest() {
+      const pref = elPref.value;
+      const q = elMuni.value;
+
+      if (!pref) {
+        renderSuggest([]);
+        return;
+      }
+
+      const list = suggestMunicipalities(pref, q);
+      renderSuggest(list);
+    }
+
+    // デバウンス処理
+    function debounceSuggest() {
+      clearTimeout(suggestTimer);
+      suggestTimer = setTimeout(requestSuggest, 200);
+    }
+
+    // ==================== バリデーション ====================
+
+    function validateInput(pref, muni) {
+      if (!pref) {
+        return { ok: false, message: '都道府県を選択してください' };
+      }
+
+      if (!muni) {
+        return { ok: false, message: '市区町村を入力してください' };
+      }
+
+      const rows = appData.rowsByPref.get(pref) || [];
+      const exists = rows.some(row => row.muni === muni);
+
+      if (!exists) {
+        return {
+          ok: false,
+          message: '市区町村は候補（プルダウン）から選択してください'
         };
       }
 
-      // ==================== 結果表示 ====================
+      return { ok: true };
+    }
 
-      function renderMenu(res) {
-        clearResult();
+    // ==================== 判定処理 ====================
 
-        if (!res || !res.ok) {
-          setMsg((res && res.message) ? res.message : "データの取得に失敗しました", "error");
-          return;
-        }
+    function getJudgement(pref, muni) {
+      const rows = appData.rowsByPref.get(pref) || [];
+      const matches = rows.filter(row => row.muni === muni);
 
-        elMsg.className = "message";
+      if (matches.length === 0) {
+        return {
+          ok: false,
+          message: '該当する市区町村が見つかりませんでした'
+        };
+      }
 
-        const items = res.items || [];
+      if (matches.length > 1) {
+        return {
+          ok: false,
+          message: '同一の都道府県×市区町村が複数行に存在します（データ重複）'
+        };
+      }
 
-        const header = document.createElement("div");
-        header.className = "result-header";
-        header.innerHTML = `
+      const targetRow = matches[0];
+      const values = targetRow.rowData.slice(CONFIG.FIRST_JUDGE_COL - 1);
+
+      const items = [];
+      for (let i = 0; i < values.length; i++) {
+        const provider = appData.providers[i];
+        const category = appData.categories[i];
+        const value = values[i];
+
+        if (!provider || !category) continue;
+
+        items.push({
+          provider: provider.trim(),
+          category: category.trim(),
+          value: value ? value.trim() : ''
+        });
+      }
+
+      return {
+        ok: true,
+        pref,
+        muni,
+        items
+      };
+    }
+
+    // ==================== 結果表示 ====================
+
+    function renderMenu(res) {
+      clearResult();
+
+      if (!res || !res.ok) {
+        setMsg((res && res.message) ? res.message : "データの取得に失敗しました", "error");
+        return;
+      }
+
+      elMsg.className = "message";
+
+      const items = res.items || [];
+
+      const header = document.createElement("div");
+      header.className = "result-header";
+      header.innerHTML = `
           <div class="result-header-title">${res.pref} ${res.muni}</div>
           <div class="result-header-sub">の対応状況</div>
         `;
-        elResult.appendChild(header);
+      elResult.appendChild(header);
 
-        // 凡例を追加
-        const legend = document.createElement("div");
-        legend.className = "result-legend";
-        legend.innerHTML = `
+      // 凡例を追加
+      const legend = document.createElement("div");
+      legend.className = "result-legend";
+      legend.innerHTML = `
           <div class="result-legend-item">
             <span class="legend-badge available">対応可能</span>
             <span class="legend-desc">通常対応しているエリアです</span>
@@ -1201,150 +1224,151 @@
             <span class="legend-desc">現在は対応対象外のエリアです</span>
           </div>
         `;
-        elResult.appendChild(legend);
+      elResult.appendChild(legend);
 
-        items.forEach(it => {
-          const card = document.createElement("div");
-          card.className = "result-item";
+      items.forEach(it => {
+        const card = document.createElement("div");
+        card.className = "result-item";
 
-          const serviceName = document.createElement("div");
-          serviceName.className = "result-service";
-          const formattedCategory = formatCategoryName(it.category ?? "");
-          serviceName.textContent = `${it.provider ?? ""} ― ${formattedCategory}`;
-          card.appendChild(serviceName);
+        const serviceName = document.createElement("div");
+        serviceName.className = "result-service";
+        const formattedCategory = formatCategoryName(it.category ?? "");
+        serviceName.textContent = `${it.provider ?? ""} ― ${formattedCategory}`;
+        card.appendChild(serviceName);
 
-          const statusRow = document.createElement("div");
-          statusRow.className = "result-status";
+        const statusRow = document.createElement("div");
+        statusRow.className = "result-status";
 
-          const statusLabel = document.createElement("span");
-          statusLabel.className = "result-status-label";
-          statusLabel.textContent = "状況：";
-          statusRow.appendChild(statusLabel);
+        const statusLabel = document.createElement("span");
+        statusLabel.className = "result-status-label";
+        statusLabel.textContent = "状況：";
+        statusRow.appendChild(statusLabel);
 
-          const value = it.value ?? "";
-          const badge = document.createElement("span");
-          badge.className = `status-badge ${getStatusClass(value)}`;
-          badge.textContent = getStatusText(value);
-          statusRow.appendChild(badge);
+        const value = it.value ?? "";
+        const badge = document.createElement("span");
+        badge.className = `status-badge ${getStatusClass(value)}`;
+        badge.textContent = getStatusText(value);
+        statusRow.appendChild(badge);
 
-          card.appendChild(statusRow);
-          elResult.appendChild(card);
-        });
+        card.appendChild(statusRow);
+        elResult.appendChild(card);
+      });
 
-        elResult.classList.add("show", "fade-in");
+      elResult.classList.add("show", "fade-in");
+    }
+
+    // ==================== イベントハンドラ ====================
+
+    // 都道府県変更時
+    function onPrefChange() {
+      setMsg("", "");
+      clearResult();
+      elMuni.value = "";
+      renderSuggest([]);
+      debounceSuggest();
+      // ヒントを再表示
+      if (elMuniHint) {
+        elMuniHint.classList.remove("hidden");
       }
+    }
 
-      // ==================== イベントハンドラ ====================
-
-      // 都道府県変更時
-      function onPrefChange() {
-        setMsg("", "");
-        clearResult();
-        elMuni.value = "";
-        renderSuggest([]);
-        debounceSuggest();
-        // ヒントを再表示
+    // 市区町村入力時
+    function onMuniInput() {
+      // 入力があればヒントを非表示
+      if (elMuni.value.length > 0) {
+        if (elMuniHint) {
+          elMuniHint.classList.add("hidden");
+        }
+      } else {
+        // 空になったらヒントを再表示
         if (elMuniHint) {
           elMuniHint.classList.remove("hidden");
         }
       }
+      // サジェスト処理
+      debounceSuggest();
+    }
 
-      // 市区町村入力時
-      function onMuniInput() {
-        // 入力があればヒントを非表示
-        if (elMuni.value.length > 0) {
-          if (elMuniHint) {
-            elMuniHint.classList.add("hidden");
-          }
-        } else {
-          // 空になったらヒントを再表示
-          if (elMuniHint) {
-            elMuniHint.classList.remove("hidden");
-          }
-        }
-        // サジェスト処理
-        debounceSuggest();
+    // 送信処理
+    async function onSubmit() {
+      const pref = elPref.value;
+      const muni = elMuni.value.trim();
+
+      setMsg("", "");
+      clearResult();
+
+      // 基本バリデーション（都道府県・市区町村が入力されているか）
+      if (!pref) {
+        setMsg('都道府県を選択してください', "error");
+        return;
+      }
+      if (!muni) {
+        setMsg('市区町村を入力してください', "error");
+        return;
       }
 
-      // 送信処理
-      async function onSubmit() {
-        const pref = elPref.value;
-        const muni = elMuni.value.trim();
+      setBusy(true);
 
-        setMsg("", "");
-        clearResult();
+      // データがまだ準備できていない場合はローディングを表示して待つ
+      if (!appData.isReady) {
+        showLoading();
 
-        // 基本バリデーション（都道府県・市区町村が入力されているか）
-        if (!pref) {
-          setMsg('都道府県を選択してください', "error");
-          return;
-        }
-        if (!muni) {
-          setMsg('市区町村を入力してください', "error");
-          return;
-        }
+        // タイムアウト警告を設定
+        loadingTimeout = setTimeout(() => {
+          showLoadingError();
+        }, 20000);
 
-        setBusy(true);
+        await dataReadyPromise;
+        hideLoading();
 
-        // データがまだ準備できていない場合はローディングを表示して待つ
-        if (!appData.isReady) {
-          showLoading();
-
-          // タイムアウト警告を設定
-          loadingTimeout = setTimeout(() => {
-            showLoadingError();
-          }, 20000);
-
-          await dataReadyPromise;
-          hideLoading();
-
-          // エラーがあった場合
-          if (appData.loadError) {
-            let errorMessage = 'データの読み込みに失敗しました';
-            if (appData.loadError.name === 'AbortError') {
-              errorMessage = '読み込みに時間がかかりすぎています。ページを再読み込みしてください。';
-            } else if (!navigator.onLine) {
-              errorMessage = 'インターネット接続を確認してください';
-            }
-            setMsg(errorMessage, 'error');
-            setBusy(false);
-            return;
+        // エラーがあった場合
+        if (appData.loadError) {
+          let errorMessage = 'データの読み込みに失敗しました';
+          if (appData.loadError.name === 'AbortError') {
+            errorMessage = '読み込みに時間がかかりすぎています。ページを再読み込みしてください。';
+          } else if (!navigator.onLine) {
+            errorMessage = 'インターネット接続を確認してください';
           }
-        }
-
-        // 市区町村の存在チェック
-        const rows = appData.rowsByPref.get(pref) || [];
-        const exists = rows.some(row => row.muni === muni);
-        if (!exists) {
-          setMsg('市区町村は候補（プルダウン）から選択してください', "error");
+          setMsg(errorMessage, 'error');
           setBusy(false);
           return;
         }
-
-        showSearching(pref, muni);
-
-        setTimeout(() => {
-          const result = getJudgement(pref, muni);
-          renderMenu(result);
-          setBusy(false);
-        }, 300);
       }
 
-      // ==================== 初期化 ====================
+      // 市区町村の存在チェック
+      const rows = appData.rowsByPref.get(pref) || [];
+      const exists = rows.some(row => row.muni === muni);
+      if (!exists) {
+        setMsg('市区町村は候補（プルダウン）から選択してください', "error");
+        setBusy(false);
+        return;
+      }
 
-      document.addEventListener("DOMContentLoaded", () => {
-        // お問い合わせリンク設定
-        elContactLink.href = CONFIG.CONTACT_URL;
-        elContactLink.target = "_blank";
+      showSearching(pref, muni);
 
-        // イベントリスナー設定
-        elPref.addEventListener("change", onPrefChange);
-        elMuni.addEventListener("input", onMuniInput);
-        elBtn.addEventListener("click", onSubmit);
+      setTimeout(() => {
+        const result = getJudgement(pref, muni);
+        renderMenu(result);
+        setBusy(false);
+      }, 300);
+    }
 
-        // CSVデータをバックグラウンドで取得（UIをブロックしない）
-        loadAndParseCSV();
-      });
-    </script>
-  </body>
+    // ==================== 初期化 ====================
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // お問い合わせリンク設定
+      elContactLink.href = CONFIG.CONTACT_URL;
+      elContactLink.target = "_blank";
+
+      // イベントリスナー設定
+      elPref.addEventListener("change", onPrefChange);
+      elMuni.addEventListener("input", onMuniInput);
+      elBtn.addEventListener("click", onSubmit);
+
+      // CSVデータをバックグラウンドで取得（UIをブロックしない）
+      loadAndParseCSV();
+    });
+  </script>
+</body>
+
 </html>
