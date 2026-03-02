@@ -4,7 +4,6 @@
   --color-base: #faf5f0;
   --color-card: #ffffff;
   --color-accent: #489981;
-  /* --color-accent-hover: #3d8570; */
   --color-air: #dfeeea;
   --color-text: #4b4642;
   --color-text-light: #7a756f;
@@ -465,6 +464,10 @@ input::placeholder {
 /* 結果アイテム */
 .result-item-group {
   position: relative;
+
+  + .result-item-group {
+    margin-top: 24px;
+  }
 }
 
 .result-item-image {
@@ -504,10 +507,6 @@ input::placeholder {
 
 .result-item:last-child {
   margin-bottom: 0;
-}
-
-.result-item + .result-title {
-  margin-top: 24px;
 }
 
 /* サービス名（種別・カテゴリー統合） */
@@ -563,7 +562,6 @@ input::placeholder {
 
 .result-status-note {
   font-size: calc(13 / 16 * 1rem);
-  color: var(--color-text-light);
   font-weight: 500;
   margin-top: 8px;
 }
