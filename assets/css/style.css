@@ -463,6 +463,33 @@ input::placeholder {
 }
 
 /* 結果アイテム */
+.result-item-group {
+  position: relative;
+}
+
+.result-item-image {
+  width: 20vw;
+  height: 20vw;
+  max-width: 240px;
+  max-height: 240px;
+  overflow: hidden;
+  text-align: center;
+  position: absolute;
+  top: 0;
+  left: calc(
+    468px - 80px + 100px
+  ); /* 468px: cardの幅, 80px: カードの左右の余白, 100px: 左側から離す距離 */
+
+  @media (width < 1000px) {
+    display: none;
+  }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
 .result-title {
   margin-bottom: 16px;
   line-height: 1;
