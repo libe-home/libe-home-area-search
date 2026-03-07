@@ -105,6 +105,8 @@ body {
     line-height: 1;
 
     img {
+      width: 220px;
+
       @media (width <= 600px) {
         width: auto;
         height: 30px;
