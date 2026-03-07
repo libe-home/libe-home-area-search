@@ -165,9 +165,6 @@
 
           <!-- 工務店の結果 -->
           <div class="result-item-group">
-            <div class="result-item-image">
-              <img src="assets/images/img_woman.png" alt="女性イメージ画像" width="172" height="210">
-            </div>
             <h3 class="result-title"><img src="assets/images/logo.svg" alt="リベ大工務店" width="127" height="24"></h3>
             <div class="result-item">
               <h4 class="result-service">注文住宅</h4>
@@ -211,7 +208,8 @@
           <section class="work-intro">
             <h3 class="work-intro-title">リフォーム各工事の紹介</h3>
             <dl class="work-intro-list">
-              <dt class="work-intro-term">大工工事</dt>
+              <!-- sys：リフォームの対応可能工事の項目には「is_available」classを付与してください -->
+              <dt class="work-intro-term is_available">大工工事</dt>
               <dd class="work-intro-desc">内装工事、断熱工事、壁の設置・撤去、畳からフローリングへの変更、室内のバリアフリー化、収納棚・スペースの追加、造作家具工事など</dd>
 
               <dt class="work-intro-term">内装工事</dt>
@@ -220,10 +218,10 @@
               <dt class="work-intro-term">断熱工事</dt>
               <dd class="work-intro-desc">開口部の断熱（内窓設置、窓の二重化、玄関ドア交換等）、床・天井・壁の断熱施工</dd>
 
-              <dt class="work-intro-term">建具（木製）工事</dt>
+              <dt class="work-intro-term is_available">建具（木製）工事</dt>
               <dd class="work-intro-desc">建具の交換・調整、造作建具など</dd>
 
-              <dt class="work-intro-term">設備工事</dt>
+              <dt class="work-intro-term is_available">設備工事</dt>
               <dd class="work-intro-desc">キッチン・浴室・洗面台・トイレといった水回り設備の交換、給排水工事、水栓（蛇口）の交換、エコキュートの交換、IHクッキングヒーター交換など</dd>
 
               <dt class="work-intro-term">ガス工事</dt>

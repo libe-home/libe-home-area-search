@@ -8,8 +8,8 @@
   --color-text: #4b4642;
   --color-text-light: #7a756f;
   --color-gray: #d3ccc5;
-  --color-error: #c97c6b;
-  --color-error-bg: #fdf6f4;
+  --color-error: #b51821;
+  --color-error-bg: #ffdcd3;
   --font-main: "Zen Kaku Gothic New", sans-serif;
   --font-mincho: "Zen Old Mincho", serif;
 
@@ -60,6 +60,10 @@ body {
 
 .header {
   grid-area: header;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 100;
 }
 
 .contents {
@@ -325,13 +329,14 @@ input::placeholder {
 
 /* エラーメッセージ */
 .message {
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 22px !important;
-  font-weight: 700;
-  margin-top: 12px;
+  font-size: calc(14 / 16 * 1rem) !important;
+  font-weight: 500;
+  width: max-content;
+  padding: 2px 12px;
+  margin-inline: auto;
+  margin-top: 16px;
+  border-radius: 2px;
   display: none;
-  line-height: 1.4;
 }
 
 .message.show {
@@ -341,7 +346,6 @@ input::placeholder {
 .message.error {
   background: var(--color-error-bg);
   color: var(--color-error);
-  border: 1px solid rgba(201, 124, 107, 0.3);
 }
 
 /* 結果セクション */
@@ -470,29 +474,6 @@ input::placeholder {
   }
 }
 
-.result-item-image {
-  width: 20vw;
-  height: 20vw;
-  max-width: 240px;
-  max-height: 240px;
-  overflow: hidden;
-  text-align: center;
-  position: absolute;
-  top: 0;
-  left: calc(
-    468px - 80px + 100px
-  ); /* 468px: cardの幅, 80px: カードの左右の余白, 100px: 左側から離す距離 */
-
-  @media (width < 1000px) {
-    display: none;
-  }
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-}
-
 .result-title {
   margin-bottom: 16px;
   line-height: 1;
@@ -596,9 +577,19 @@ input::placeholder {
 }
 
 .work-intro-term {
-  font-size: 1rem;
+  color: var(--color-status-unavailable);
+  font-size: calc(14 / 16 * 1rem);
   font-weight: 500;
   margin-bottom: 4px;
+  width: max-content;
+  background: var(--color-status-unavailable-bg);
+  padding: 2px 12px;
+  border-radius: 2px;
+
+  &.is_available {
+    color: var(--color-status-partial);
+    background: var(--color-status-partial-bg);
+  }
 }
 
 .work-intro-desc {
