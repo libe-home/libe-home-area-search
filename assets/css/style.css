@@ -592,6 +592,11 @@ input::placeholder {
     color: var(--color-status-partial);
     background: var(--color-status-partial-bg);
   }
+
+  &.is_consult {
+    color: var(--color-status-consult);
+    background: var(--color-status-consult-bg);
+  }
 }
 
 .work-intro-desc {
