@@ -359,7 +359,7 @@ function onDataReady() {
   // ヒントを更新（ローディング表示を解除）
   if (elMuniHint) {
     elMuniHint.classList.remove("loading-hint");
-    elMuniHint.textContent = "※ ひらがなを数文字入力すると候補が絞り込めます";
+    elMuniHint.textContent = "※ ひらがなを数文字入力すると候補が表示されます";
   }
 }
 
