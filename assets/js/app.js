@@ -419,6 +419,13 @@ function requestSuggest() {
   }
 
   const list = suggestMunicipalities(pref, q);
+
+  // 入力値が候補と完全一致する場合はリストをクリア（選択後の再表示を防止）
+  if (list.length === 1 && list[0].muni === q) {
+    renderSuggest([]);
+    return;
+  }
+
   renderSuggest(list);
 }
 
