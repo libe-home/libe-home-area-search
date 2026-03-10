@@ -185,8 +185,7 @@ main {
   }
 }
 
-select,
-input[type="text"] {
+select {
   width: 100%;
   min-height: 42px;
   padding: 8px 16px;
@@ -211,21 +210,18 @@ select {
   position: relative;
 }
 
-select:focus,
-input[type="text"]:focus {
+select:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(72, 153, 129, 0.15);
 }
 
-/* datalist のブラウザ標準矢印を非表示（市区町村入力） */
-input[type="text"][list]::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  pointer-events: none;
+/* 市区町村が「選択してください」のとき（値が空＝:invalid）は文字色をplaceholderと同じに */
+#muni:invalid {
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
 }
 
-select:disabled,
-input:disabled {
+select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   background: #f0ede8;
@@ -234,11 +230,6 @@ input:disabled {
 /* 都道府県が「選択してください」のとき（値が空＝:invalid）は文字色をplaceholderと同じに */
 #pref:invalid {
   color: color-mix(in srgb, var(--color-text) 60%, transparent);
-}
-
-input::placeholder {
-  color: color-mix(in srgb, var(--color-text) 60%, transparent);
-  font-size: 1rem;
 }
 
 .form-hint {
@@ -274,10 +265,9 @@ input::placeholder {
   vertical-align: middle;
 }
 
-/* 都道府県未選択時は市区町村入力を非活性 */
+/* 都道府県未選択時は市区町村セレクトを非活性 */
 .card:has(#pref:invalid) #muni {
   pointer-events: none;
-  background-image: none;
   opacity: 0.5;
   cursor: not-allowed;
 }

@@ -130,8 +130,9 @@
         </div>
         <div class="form-item">
           <label class="form-label" for="muni">市区町村</label>
-          <input id="muni" type="text" list="muniList" placeholder="データ読み込み中..." autocomplete="off" data-1p-ignore data-lpignore="true" data-form-type="other" />
-          <datalist id="muniList"></datalist>
+          <select id="muni" required>
+            <option value="">データ読み込み中...</option>
+          </select>
           <p id="muniHint" class="form-hint loading-hint">※ エリアデータを読み込んでいます...</p>
         </div>
 

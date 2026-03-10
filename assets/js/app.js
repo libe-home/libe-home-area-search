@@ -5,8 +5,7 @@ const CONFIG = {
   KOMUTEN_CATEGORIES: ['注文住宅', 'リノベーション', 'オフィス・店舗'],  // 工務店グループの表示対象列
   HEADER_ROW: 3,        // 3行目にサービス名（注文住宅・リノベーション・リフォーム_各工事...）
   DATA_START_ROW: 4,    // 4行目からデータ開始
-  FIRST_JUDGE_COL: 4,   // D列から判定列
-  SUGGEST_LIMIT: 30
+  FIRST_JUDGE_COL: 4    // D列から判定列
 };
 
 // ==================== グローバルデータ ====================
@@ -26,7 +25,6 @@ const dataReadyPromise = new Promise(resolve => {
 // ==================== DOM要素の取得 ====================
 const elPref = document.getElementById("pref");
 const elMuni = document.getElementById("muni");
-const elMuniList = document.getElementById("muniList");
 const elBtn = document.getElementById("btn");
 const elMsg = document.getElementById("msg");
 const elResult = document.getElementById("result");
@@ -34,7 +32,6 @@ const elMuniHint = document.getElementById("muniHint");
 const elLoadingOverlay = document.getElementById("loadingOverlay");
 const elLoadingContent = document.getElementById("loadingContent");
 
-let suggestTimer = null;
 let loadingTimeout = null;
 const BTN_ORIGINAL_HTML = elBtn.innerHTML;
 
@@ -351,87 +348,46 @@ function buildIndex() {
   }
 }
 
-/** データ読み込み完了時にプレースホルダーとヒントテキストを更新する。 */
+/** データ読み込み完了時にセレクトとヒントテキストを更新する。 */
 function onDataReady() {
-  // placeholderを更新
-  elMuni.placeholder = "市区町村名を入力してください";
+  // 都道府県が既に選択されていればセレクトを構築
+  populateMuniSelect(elPref.value);
 
   // ヒントを更新（ローディング表示を解除）
   if (elMuniHint) {
     elMuniHint.classList.remove("loading-hint");
-    elMuniHint.textContent = "※ 市区町村名（漢字・ひらがな）を入力すると候補が表示されます";
+    elMuniHint.textContent = "※ 市区町村を選択してください";
   }
 }
 
-// ==================== サジェスト ====================
+// ==================== 市区町村セレクト ====================
 
 /**
- * 指定都道府県内で、市区町村名またはかな読みが query に部分一致する候補を返す。
- * 重複を除外し、最大 CONFIG.SUGGEST_LIMIT 件まで返す。
+ * 指定都道府県の市区町村一覧で <select id="muni"> を構築する。
+ * 重複を除外し、先頭に空の選択肢を置く。
  */
-function suggestMunicipalities(pref, query) {
-  if (!pref) return [];
+function populateMuniSelect(pref) {
+  elMuni.innerHTML = "";
+
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = "";
+  defaultOpt.textContent = "選択してください";
+  elMuni.appendChild(defaultOpt);
+
+  if (!pref) return;
 
   const rows = appData.rowsByPref.get(pref) || [];
-  const results = [];
   const seen = new Set();
 
   for (const row of rows) {
     if (seen.has(row.muni)) continue;
+    seen.add(row.muni);
 
-    const muniMatch = row.muni.includes(query);
-    const kanaMatch = row.kana.includes(query);
-
-    if (muniMatch || kanaMatch) {
-      results.push({
-        muni: row.muni,
-        kana: row.kana
-      });
-      seen.add(row.muni);
-
-      if (results.length >= CONFIG.SUGGEST_LIMIT) break;
-    }
-  }
-
-  return results;
-}
-
-/** サジェスト候補リストを datalist の option 要素として描画する。 */
-function renderSuggest(list) {
-  elMuniList.innerHTML = "";
-  (list || []).forEach(item => {
     const opt = document.createElement("option");
-    opt.value = item.muni || "";
-    if (item.kana) opt.label = item.kana;
-    elMuniList.appendChild(opt);
-  });
-}
-
-/** 現在の都道府県と入力値からサジェスト候補を検索し、datalist を更新する。 */
-function requestSuggest() {
-  const pref = elPref.value;
-  const q = elMuni.value;
-
-  if (!pref) {
-    renderSuggest([]);
-    return;
+    opt.value = row.muni;
+    opt.textContent = row.muni;
+    elMuni.appendChild(opt);
   }
-
-  const list = suggestMunicipalities(pref, q);
-
-  // 入力値が候補と完全一致する場合はリストをクリア（選択後の再表示を防止）
-  if (list.length === 1 && list[0].muni === q) {
-    renderSuggest([]);
-    return;
-  }
-
-  renderSuggest(list);
-}
-
-/** サジェストリクエストを200msのデバウンスで遅延実行する。 */
-function debounceSuggest() {
-  clearTimeout(suggestTimer);
-  suggestTimer = setTimeout(requestSuggest, 200);
 }
 
 // ==================== 判定処理 ====================
@@ -725,33 +681,28 @@ function renderMenu(res) {
 
 // ==================== イベントハンドラ ====================
 
-/** 都道府県セレクト変更時：市区町村入力をリセットし、サジェスト候補を再構築する。 */
+/** 都道府県セレクト変更時：市区町村セレクトを再構築する。 */
 function onPrefChange() {
   setMsg("", "");
   clearResult();
-  elMuni.value = "";
-  renderSuggest([]);
+  populateMuniSelect(elPref.value);
   // ヒントを再表示
   if (elMuniHint) {
     elMuniHint.classList.remove("hidden");
   }
 }
 
-/** 市区町村入力時：ヒントの表示切替とサジェスト候補の更新を行う。 */
-function onMuniInput() {
-  // 入力があればヒントを非表示
-  if (elMuni.value.length > 0) {
+/** 市区町村セレクト変更時：ヒントの表示切替を行う。 */
+function onMuniChange() {
+  if (elMuni.value) {
     if (elMuniHint) {
       elMuniHint.classList.add("hidden");
     }
   } else {
-    // 空になったらヒントを再表示
     if (elMuniHint) {
       elMuniHint.classList.remove("hidden");
     }
   }
-  // サジェスト処理
-  debounceSuggest();
 }
 
 /**
@@ -771,7 +722,7 @@ async function onSubmit() {
     return;
   }
   if (!muni) {
-    setMsg('市区町村を入力してください', "error");
+    setMsg('市区町村を選択してください', "error");
     return;
   }
 
@@ -812,7 +763,7 @@ async function onSubmit() {
   const rows = appData.rowsByPref.get(pref) || [];
   const exists = rows.some(row => row.muni === muni);
   if (!exists) {
-    setMsg('市区町村は表示された候補から選択してください', "error");
+    setMsg('該当する市区町村が見つかりません', "error");
     setBusy(false);
     return;
   }
@@ -827,13 +778,7 @@ async function onSubmit() {
 document.addEventListener("DOMContentLoaded", () => {
   // イベントリスナー設定
   elPref.addEventListener("change", onPrefChange);
-  elMuni.addEventListener("input", onMuniInput);
-  elMuni.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.isComposing) {
-      e.preventDefault();
-      onSubmit();
-    }
-  });
+  elMuni.addEventListener("change", onMuniChange);
   elBtn.addEventListener("click", onSubmit);
 
   // CSVデータをバックグラウンドで並列取得
