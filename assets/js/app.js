@@ -440,6 +440,165 @@ function getJudgement(pref, muni) {
 
 // ==================== 結果表示 ====================
 
+// 工務店グループの描画
+function renderKomutenGroup(komutenItems) {
+  const group = document.createElement("div");
+  group.className = "result-item-group";
+  group.innerHTML = `
+      <h3 class="result-title">
+        <img src="assets/images/logo.png" alt="リベ大工務店" width="127" height="24">
+      </h3>
+    `;
+
+  komutenItems.forEach(it => {
+    const value       = it.value ?? "";
+    const statusClass = getStatusClass(value);
+    const statusText  = getStatusText(value);
+    const displayName = it.category === 'オフィス・店舗'
+      ? 'オフィス・店舗（新築・リノベーション）'
+      : it.category;
+
+    const item = document.createElement("div");
+    item.className = "result-item";
+
+    const serviceEl = document.createElement("h4");
+    serviceEl.className = "result-service";
+    serviceEl.textContent = displayName;
+    item.appendChild(serviceEl);
+
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "result-status";
+
+    const badge = document.createElement("span");
+    badge.className = `status-badge ${statusClass}`;
+    badge.textContent = statusText;
+    statusDiv.appendChild(badge);
+
+    if (it.category === 'オフィス・店舗' && statusClass === 'unavailable') {
+      const noteEl = document.createElement("p");
+      noteEl.className = "result-status-note";
+      noteEl.textContent = "※オフィス・店舗のリフォームをご希望の方は「リベ大リフォーム」をご確認ください。";
+      statusDiv.appendChild(noteEl);
+    }
+
+    item.appendChild(statusDiv);
+    group.appendChild(item);
+  });
+
+  return group;
+}
+
+// リフォームグループの描画
+function renderReformGroup(reformItems) {
+  const group = document.createElement("div");
+  group.className = "result-item-group";
+  group.innerHTML = `
+      <h3 class="result-title">
+        <img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
+      </h3>
+    `;
+
+  // 工事情報CSVの取得に失敗した場合
+  if (reformWorks.length === 0) {
+    const noteItem = document.createElement("div");
+    noteItem.className = "result-item";
+    const noteText = document.createElement("p");
+    noteText.className = "result-status-note";
+    noteText.textContent = "工事情報を取得できませんでした。ページを再読み込みしてください。";
+    noteItem.appendChild(noteText);
+    group.appendChild(noteItem);
+    return group;
+  }
+
+  // 各工事の対応状況をMapで保持（列名→値）
+  const reformMap = new Map(reformItems.map(it => [it.category, it.value ?? ""]));
+
+  const availableWorks = reformWorks
+    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available')
+    .map(work => work.name);
+  const consultWorks = reformWorks
+    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult')
+    .map(work => work.name);
+
+  // リフォーム result-item
+  const reformResultItem = document.createElement("div");
+  reformResultItem.className = "result-item";
+
+  const reformServiceTitle = document.createElement("h4");
+  reformServiceTitle.className = "result-service";
+  reformServiceTitle.textContent = "リフォーム";
+  reformResultItem.appendChild(reformServiceTitle);
+
+  if (availableWorks.length === 0 && consultWorks.length === 0) {
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "result-status";
+    const badge = document.createElement("span");
+    badge.className = "status-badge unavailable";
+    badge.textContent = "対応不可";
+    statusDiv.appendChild(badge);
+    reformResultItem.appendChild(statusDiv);
+  } else {
+    // バッジリスト生成ヘルパー
+    const appendBadgeGroup = (works, labelText, badgeClass) => {
+      if (works.length === 0) return;
+      const statusDiv = document.createElement("div");
+      statusDiv.className = "result-status";
+      const label = document.createElement("span");
+      label.className = "result-status-label";
+      label.textContent = labelText;
+      statusDiv.appendChild(label);
+      const ul = document.createElement("ul");
+      ul.className = "status-badge-group";
+      works.forEach(w => {
+        const li = document.createElement("li");
+        li.className = `status-badge ${badgeClass}`;
+        li.textContent = w;
+        ul.appendChild(li);
+      });
+      statusDiv.appendChild(ul);
+      reformResultItem.appendChild(statusDiv);
+    };
+    appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
+    appendBadgeGroup(consultWorks, "要相談工事：", "consult");
+  }
+  group.appendChild(reformResultItem);
+
+  // リフォーム各工事の紹介（動的 is_available 付与）
+  const workIntro = document.createElement("section");
+  workIntro.className = "work-intro";
+
+  const workIntroTitle = document.createElement("h3");
+  workIntroTitle.className = "work-intro-title";
+  workIntroTitle.textContent = "リフォーム各工事の紹介";
+  workIntro.appendChild(workIntroTitle);
+
+  const workIntroList = document.createElement("dl");
+  workIntroList.className = "work-intro-list";
+
+  reformWorks.forEach(work => {
+    const workValue = reformMap.get(work.colKey) ?? "";
+    const workStatus  = getStatusClass(workValue);
+    const isAvailable = workStatus === 'available';
+    const isConsult   = workStatus === 'consult';
+
+    const dt = document.createElement("dt");
+    dt.className = `work-intro-term${isAvailable ? ' is_available' : isConsult ? ' is_consult' : ''}`;
+    dt.textContent = work.name;
+
+    const dd = document.createElement("dd");
+    dd.className = "work-intro-desc";
+    dd.textContent = work.desc;
+
+    workIntroList.appendChild(dt);
+    workIntroList.appendChild(dd);
+  });
+
+  workIntro.appendChild(workIntroList);
+  group.appendChild(workIntro);
+
+  return group;
+}
+
 function renderMenu(res) {
   clearResult();
 
@@ -488,168 +647,12 @@ function renderMenu(res) {
   const komutenItems = items.filter(it => CONFIG.KOMUTEN_CATEGORIES.includes(it.category));
   const reformItems  = items.filter(it => it.category.startsWith('リフォーム_'));
 
-  // ── 工務店グループ ──
   if (komutenItems.length > 0) {
-    const komutenGroup = document.createElement("div");
-    komutenGroup.className = "result-item-group";
-    komutenGroup.innerHTML = `
-        <h3 class="result-title">
-          <img src="assets/images/logo.png" alt="リベ大工務店" width="127" height="24">
-        </h3>
-      `;
-
-    komutenItems.forEach(it => {
-      const value       = it.value ?? "";
-      const statusClass = getStatusClass(value);
-      const statusText  = getStatusText(value);
-      const displayName = it.category === 'オフィス・店舗'
-        ? 'オフィス・店舗（新築・リノベーション）'
-        : it.category;
-
-      const item = document.createElement("div");
-      item.className = "result-item";
-
-      const serviceEl = document.createElement("h4");
-      serviceEl.className = "result-service";
-      serviceEl.textContent = displayName;
-      item.appendChild(serviceEl);
-
-      const statusDiv = document.createElement("div");
-      statusDiv.className = "result-status";
-
-      const badge = document.createElement("span");
-      badge.className = `status-badge ${statusClass}`;
-      badge.textContent = statusText;
-      statusDiv.appendChild(badge);
-
-      if (it.category === 'オフィス・店舗' && statusClass === 'unavailable') {
-        const noteEl = document.createElement("p");
-        noteEl.className = "result-status-note";
-        noteEl.textContent = "※オフィス・店舗のリフォームをご希望の方は「リベ大リフォーム」をご確認ください。";
-        statusDiv.appendChild(noteEl);
-      }
-
-      item.appendChild(statusDiv);
-      komutenGroup.appendChild(item);
-    });
-
-    elResult.appendChild(komutenGroup);
+    elResult.appendChild(renderKomutenGroup(komutenItems));
   }
 
-  // ── リベ大リフォームグループ ──
-  if (reformItems.length > 0 && reformWorks.length === 0) {
-    // 工事情報CSVの取得に失敗した場合の注記
-    const reformNote = document.createElement("div");
-    reformNote.className = "result-item-group";
-    reformNote.innerHTML = `
-        <h3 class="result-title">
-          <img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
-        </h3>
-      `;
-    const noteItem = document.createElement("div");
-    noteItem.className = "result-item";
-    const noteText = document.createElement("p");
-    noteText.className = "result-status-note";
-    noteText.textContent = "工事情報を取得できませんでした。ページを再読み込みしてください。";
-    noteItem.appendChild(noteText);
-    reformNote.appendChild(noteItem);
-    elResult.appendChild(reformNote);
-  } else if (reformItems.length > 0) {
-    const reformGroup = document.createElement("div");
-    reformGroup.className = "result-item-group";
-    reformGroup.innerHTML = `
-        <h3 class="result-title">
-          <img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
-        </h3>
-      `;
-
-    // 各工事の対応状況をMapで保持（列名→値）
-    const reformMap = new Map(reformItems.map(it => [it.category, it.value ?? ""]));
-
-    const availableWorks = reformWorks
-      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available')
-      .map(work => work.name);
-    const consultWorks = reformWorks
-      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult')
-      .map(work => work.name);
-
-    // リフォーム result-item
-    const reformResultItem = document.createElement("div");
-    reformResultItem.className = "result-item";
-
-    const reformServiceTitle = document.createElement("h4");
-    reformServiceTitle.className = "result-service";
-    reformServiceTitle.textContent = "リフォーム";
-    reformResultItem.appendChild(reformServiceTitle);
-
-    if (availableWorks.length === 0 && consultWorks.length === 0) {
-      const statusDiv = document.createElement("div");
-      statusDiv.className = "result-status";
-      const badge = document.createElement("span");
-      badge.className = "status-badge unavailable";
-      badge.textContent = "対応不可";
-      statusDiv.appendChild(badge);
-      reformResultItem.appendChild(statusDiv);
-    } else {
-      // バッジリスト生成ヘルパー
-      const appendBadgeGroup = (works, labelText, badgeClass) => {
-        if (works.length === 0) return;
-        const statusDiv = document.createElement("div");
-        statusDiv.className = "result-status";
-        const label = document.createElement("span");
-        label.className = "result-status-label";
-        label.textContent = labelText;
-        statusDiv.appendChild(label);
-        const ul = document.createElement("ul");
-        ul.className = "status-badge-group";
-        works.forEach(w => {
-          const li = document.createElement("li");
-          li.className = `status-badge ${badgeClass}`;
-          li.textContent = w;
-          ul.appendChild(li);
-        });
-        statusDiv.appendChild(ul);
-        reformResultItem.appendChild(statusDiv);
-      };
-      appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
-      appendBadgeGroup(consultWorks, "要相談工事：", "consult");
-    }
-    reformGroup.appendChild(reformResultItem);
-
-    // リフォーム各工事の紹介（動的 is_available 付与）
-    const workIntro = document.createElement("section");
-    workIntro.className = "work-intro";
-
-    const workIntroTitle = document.createElement("h3");
-    workIntroTitle.className = "work-intro-title";
-    workIntroTitle.textContent = "リフォーム各工事の紹介";
-    workIntro.appendChild(workIntroTitle);
-
-    const workIntroList = document.createElement("dl");
-    workIntroList.className = "work-intro-list";
-
-    reformWorks.forEach(work => {
-      const workValue = reformMap.get(work.colKey) ?? "";
-      const workStatus  = getStatusClass(workValue);
-      const isAvailable = workStatus === 'available';
-      const isConsult   = workStatus === 'consult';
-
-      const dt = document.createElement("dt");
-      dt.className = `work-intro-term${isAvailable ? ' is_available' : isConsult ? ' is_consult' : ''}`;
-      dt.textContent = work.name;
-
-      const dd = document.createElement("dd");
-      dd.className = "work-intro-desc";
-      dd.textContent = work.desc;
-
-      workIntroList.appendChild(dt);
-      workIntroList.appendChild(dd);
-    });
-
-    workIntro.appendChild(workIntroList);
-    reformGroup.appendChild(workIntro);
-
-    elResult.appendChild(reformGroup);
+  if (reformItems.length > 0) {
+    elResult.appendChild(renderReformGroup(reformItems));
   }
 
   elResult.classList.add("show", "fade-in");
