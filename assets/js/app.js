@@ -707,6 +707,11 @@ function renderMenu(res) {
   }
 
   elResult.classList.add("show", "fade-in");
+
+  // 結果セクションが見えるようにスムーズスクロール
+  requestAnimationFrame(() => {
+    elResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
 }
 
 // ==================== イベントハンドラ ====================
