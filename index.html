@@ -27,7 +27,8 @@
 
   <!-- CSVフェッチ即時開始（DOMContentLoaded前に開始） -->
   <script>
-    window.__csvFetchPromise = fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv')
+    window.__csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv';
+    window.__csvFetchPromise = fetch(window.__csvUrl)
       .then(res => res.ok ? res.text() : Promise.reject('CSV取得失敗'))
       .catch(err => { window.__csvFetchError = err; return null; });
   </script>
@@ -160,7 +161,7 @@
   <script>
     // ==================== 設定 ====================
     const CONFIG = {
-      CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv',
+      CSV_URL: window.__csvUrl,
       REFORM_WORKS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1088443442&single=true&output=csv',
       KOMUTEN_CATEGORIES: ['注文住宅', 'リノベーション', 'オフィス・店舗'],  // 工務店グループの表示対象列
       HEADER_ROW: 3,        // 3行目にサービス名（注文住宅・リノベーション・リフォーム_各工事...）
