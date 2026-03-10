@@ -339,7 +339,7 @@ input::placeholder {
 
 /* エラーメッセージ */
 .message {
-  font-size: calc(14 / 16 * 1rem) !important;
+  font-size: calc(14 / 16 * 1rem);
   font-weight: 500;
   width: max-content;
   padding: 2px 12px;
