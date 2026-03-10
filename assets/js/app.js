@@ -818,11 +818,9 @@ async function onSubmit() {
     return;
   }
 
-  setTimeout(() => {
-    const result = getJudgement(pref, muni);
-    renderMenu(result);
-    setBusy(false);
-  }, 300);
+  const result = getJudgement(pref, muni);
+  renderMenu(result);
+  setBusy(false);
 }
 
 // ==================== 初期化 ====================
