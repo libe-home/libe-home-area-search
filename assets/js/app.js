@@ -817,6 +817,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // イベントリスナー設定
   elPref.addEventListener("change", onPrefChange);
   elMuni.addEventListener("input", onMuniInput);
+  elMuni.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onSubmit();
+    }
+  });
   elBtn.addEventListener("click", onSubmit);
 
   // CSVデータをバックグラウンドで並列取得
