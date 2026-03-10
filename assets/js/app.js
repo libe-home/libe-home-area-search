@@ -733,7 +733,6 @@ function onPrefChange() {
   clearResult();
   elMuni.value = "";
   renderSuggest([]);
-  debounceSuggest();
   // ヒントを再表示
   if (elMuniHint) {
     elMuniHint.classList.remove("hidden");
