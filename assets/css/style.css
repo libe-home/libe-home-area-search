@@ -34,8 +34,10 @@ a {
   transition: opacity 0.3s;
 }
 
-a:hover {
-  opacity: 0.7;
+@media (hover: hover) {
+  a:hover {
+    opacity: 0.7;
+  }
 }
 
 body {
@@ -309,8 +311,10 @@ input::placeholder {
   transform: rotate(45deg);
 }
 
-.btn:hover:not(:disabled) {
-  opacity: 0.7;
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    opacity: 0.7;
+  }
 }
 
 .btn:disabled {
@@ -724,8 +728,10 @@ input::placeholder {
   transition: background 0.2s;
 }
 
-.retry-btn:hover {
-  opacity: 0.7;
+@media (hover: hover) {
+  .retry-btn:hover {
+    opacity: 0.7;
+  }
 }
 
 .result-status + .result-status {
