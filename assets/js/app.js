@@ -80,6 +80,7 @@ function setBusy(isBusy) {
   } else {
     elBtn.classList.remove('btn--loading');
     elBtn.innerHTML = BTN_ORIGINAL_HTML;
+    elBtn.blur();
   }
 }
 
