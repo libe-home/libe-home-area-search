@@ -48,7 +48,9 @@ const reformWorksReadyPromise = new Promise(resolve => {
 
 // ==================== ユーティリティ関数 ====================
 
-// メッセージ表示（エラーのみ）
+/**
+ * エラーメッセージを表示する。kind が "error" 以外の場合はメッセージを非表示にする。
+ */
 function setMsg(text, kind) {
   elMsg.className = "message";
   if (text && kind === "error") {
@@ -57,13 +59,17 @@ function setMsg(text, kind) {
   }
 }
 
-// 結果クリア
+/**
+ * 検索結果セクションの内容をクリアし、非表示にする。
+ */
 function clearResult() {
   elResult.innerHTML = "";
   elResult.classList.remove("show");
 }
 
-// 入力無効化・ボタンローディング状態
+/**
+ * フォーム全体の操作可否を切り替える。検索中はボタン・入力を無効化しスピナーを表示する。
+ */
 function setBusy(isBusy) {
   elBtn.disabled = isBusy;
   elPref.disabled = isBusy;
@@ -84,6 +90,10 @@ const STATUS_MAP = {
   unavailable: { cssClass: "unavailable", label: "対応不可" }
 };
 
+/**
+ * CSV上の判定値（"対応可能", "要相談", "対応不可" 等）からステータスオブジェクトを返す。
+ * 返却値: { cssClass: string, label: string }
+ */
 function resolveStatus(value) {
   if (!value || value === "" || value === "—" || value === "対応不可") return STATUS_MAP.unavailable;
   if (value.includes("非対応") || value.includes("対応エリア外")) return STATUS_MAP.unavailable;
@@ -92,15 +102,19 @@ function resolveStatus(value) {
   return STATUS_MAP.unavailable;
 }
 
+/** 判定値からCSSクラス名（"available" / "consult" / "unavailable"）を返す。 */
 function getStatusClass(value) {
   return resolveStatus(value).cssClass;
 }
 
+/** 判定値から表示用ラベル（"対応可能" / "要相談" / "対応不可"）を返す。 */
 function getStatusText(value) {
   return resolveStatus(value).label;
 }
 
-// ローディング表示制御
+/**
+ * 全画面ローディングオーバーレイを表示する。データ未取得状態で検索ボタンが押された際に使用。
+ */
 function showLoading() {
   if (elLoadingOverlay) {
     elLoadingOverlay.style.display = "flex";
@@ -116,6 +130,7 @@ function showLoading() {
   }
 }
 
+/** ローディングオーバーレイを非表示にし、タイムアウトタイマーをクリアする。 */
 function hideLoading() {
   if (loadingTimeout) {
     clearTimeout(loadingTimeout);
@@ -129,6 +144,7 @@ function hideLoading() {
   }
 }
 
+/** ローディングが長時間続いた場合にエラーメッセージと再読み込みボタンを表示する。 */
 function showLoadingError() {
   if (elLoadingContent) {
     elLoadingContent.innerHTML = `
@@ -156,7 +172,9 @@ const CACHE_KEY = 'libe_koumu_csv_cache';
 
 // ==================== CSV読み込みと解析 ====================
 
-// CSVテキストを解析してアプリデータを構築
+/**
+ * CSVテキストをPapaParseで解析し、appData にテーブル・カテゴリ・都道府県別インデックスを構築する。
+ */
 function parseAndBuildData(csvText) {
   const parsed = Papa.parse(csvText, {
     skipEmptyLines: false
@@ -174,7 +192,7 @@ function parseAndBuildData(csvText) {
   buildIndex();
 }
 
-// キャッシュからデータを読み込む
+/** localStorageからキャッシュ済みCSVテキストを取得する。存在しない場合は null を返す。 */
 function loadFromCache() {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
@@ -187,7 +205,7 @@ function loadFromCache() {
   return null;
 }
 
-// キャッシュにデータを保存
+/** CSVテキストをlocalStorageにキャッシュとして保存する。 */
 function saveToCache(csvText) {
   try {
     localStorage.setItem(CACHE_KEY, csvText);
@@ -196,6 +214,12 @@ function saveToCache(csvText) {
   }
 }
 
+/**
+ * メインCSVデータの読み込みと解析を行う。
+ * 1. キャッシュがあれば即座にデータを構築（高速表示）
+ * 2. バックグラウンドでネットワークから最新データを取得
+ * 3. キャッシュを更新し、差分があればデータを再構築
+ */
 async function loadAndParseCSV() {
   try {
     // 1. まずキャッシュから読み込みを試みる（即座にデータ準備）
@@ -271,6 +295,11 @@ async function loadAndParseCSV() {
 }
 
 // ==================== 対応可能工事CSV読み込み ====================
+
+/**
+ * リフォーム対応可能工事のCSVを取得し、reformWorks 配列を構築する。
+ * 各工事の名前・列キー・説明を保持する。
+ */
 async function loadReformWorks() {
   try {
     const response = await fetch(CONFIG.REFORM_WORKS_CSV_URL);
@@ -294,7 +323,10 @@ async function loadReformWorks() {
   }
 }
 
-// インデックス構築（都道府県別Map）
+/**
+ * CSVデータから都道府県別のインデックス（Map）を構築する。
+ * 各エントリには市区町村名・かな・行インデックス・行データを格納。
+ */
 function buildIndex() {
   appData.rowsByPref = new Map();
 
@@ -319,7 +351,7 @@ function buildIndex() {
   }
 }
 
-// データ読み込み完了時のUI更新
+/** データ読み込み完了時にプレースホルダーとヒントテキストを更新する。 */
 function onDataReady() {
   // placeholderを更新
   elMuni.placeholder = "候補から選択してください";
@@ -333,7 +365,10 @@ function onDataReady() {
 
 // ==================== サジェスト ====================
 
-// 市区町村候補取得（部分一致）
+/**
+ * 指定都道府県内で、市区町村名またはかな読みが query に部分一致する候補を返す。
+ * 重複を除外し、最大 CONFIG.SUGGEST_LIMIT 件まで返す。
+ */
 function suggestMunicipalities(pref, query) {
   if (!pref) return [];
 
@@ -362,7 +397,7 @@ function suggestMunicipalities(pref, query) {
   return results;
 }
 
-// サジェスト描画
+/** サジェスト候補リストを datalist の option 要素として描画する。 */
 function renderSuggest(list) {
   elMuniList.innerHTML = "";
   (list || []).forEach(item => {
@@ -373,7 +408,7 @@ function renderSuggest(list) {
   });
 }
 
-// サジェストリクエスト
+/** 現在の都道府県と入力値からサジェスト候補を検索し、datalist を更新する。 */
 function requestSuggest() {
   const pref = elPref.value;
   const q = elMuni.value;
@@ -387,7 +422,7 @@ function requestSuggest() {
   renderSuggest(list);
 }
 
-// デバウンス処理
+/** サジェストリクエストを200msのデバウンスで遅延実行する。 */
 function debounceSuggest() {
   clearTimeout(suggestTimer);
   suggestTimer = setTimeout(requestSuggest, 200);
@@ -395,6 +430,11 @@ function debounceSuggest() {
 
 // ==================== 判定処理 ====================
 
+/**
+ * 指定した都道府県・市区町村の対応状況を判定する。
+ * 該当データが見つからない場合やデータ重複時はエラー情報を返す。
+ * 正常時はカテゴリごとの判定値一覧を返す。
+ */
 function getJudgement(pref, muni) {
   const rows = appData.rowsByPref.get(pref) || [];
   const matches = rows.filter(row => row.muni === muni);
@@ -440,7 +480,10 @@ function getJudgement(pref, muni) {
 
 // ==================== 結果表示 ====================
 
-// 工務店グループの描画
+/**
+ * 工務店グループ（注文住宅・リノベーション・オフィス/店舗）の結果カードを生成して返す。
+ * 各サービスの対応状況バッジと、オフィス・店舗対応不可時の補足メッセージを含む。
+ */
 function renderKomutenGroup(komutenItems) {
   const group = document.createElement("div");
   group.className = "result-item-group";
@@ -488,7 +531,11 @@ function renderKomutenGroup(komutenItems) {
   return group;
 }
 
-// リフォームグループの描画
+/**
+ * リベ大リフォームグループの結果カードを生成して返す。
+ * 対応可能/要相談の工事一覧をバッジで表示し、各工事の紹介セクションも含む。
+ * 工事情報CSV未取得時はエラーメッセージを表示する。
+ */
 function renderReformGroup(reformItems) {
   const group = document.createElement("div");
   group.className = "result-item-group";
@@ -599,6 +646,10 @@ function renderReformGroup(reformItems) {
   return group;
 }
 
+/**
+ * 判定結果をもとに、結果セクション全体（ヘッダー・凡例・工務店/リフォームグループ）を描画する。
+ * エラー時はエラーメッセージを表示する。
+ */
 function renderMenu(res) {
   clearResult();
 
@@ -660,7 +711,7 @@ function renderMenu(res) {
 
 // ==================== イベントハンドラ ====================
 
-// 都道府県変更時
+/** 都道府県セレクト変更時：市区町村入力をリセットし、サジェスト候補を再構築する。 */
 function onPrefChange() {
   setMsg("", "");
   clearResult();
@@ -673,7 +724,7 @@ function onPrefChange() {
   }
 }
 
-// 市区町村入力時
+/** 市区町村入力時：ヒントの表示切替とサジェスト候補の更新を行う。 */
 function onMuniInput() {
   // 入力があればヒントを非表示
   if (elMuni.value.length > 0) {
@@ -690,7 +741,10 @@ function onMuniInput() {
   debounceSuggest();
 }
 
-// 送信処理
+/**
+ * 検索ボタン押下時の送信処理。
+ * バリデーション → データ準備待機 → 判定実行 → 結果描画 の順に処理する。
+ */
 async function onSubmit() {
   const pref = elPref.value;
   const muni = elMuni.value.trim();
