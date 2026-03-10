@@ -278,6 +278,10 @@ input::placeholder {
   cursor: not-allowed;
 }
 
+.card:has(#pref:invalid) #muniHint {
+  display: none;
+}
+
 /* ボタン（フル幅） */
 .btn {
   width: 100%;
