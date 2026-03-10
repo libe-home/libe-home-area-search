@@ -524,6 +524,7 @@ input::placeholder {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  list-style: none;
 }
 
 /* リフォーム各工事の紹介 */
