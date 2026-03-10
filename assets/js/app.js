@@ -373,15 +373,14 @@ function suggestMunicipalities(pref, query) {
   if (!pref) return [];
 
   const rows = appData.rowsByPref.get(pref) || [];
-  const queryLower = query.toLowerCase();
   const results = [];
   const seen = new Set();
 
   for (const row of rows) {
     if (seen.has(row.muni)) continue;
 
-    const muniMatch = row.muni.toLowerCase().includes(queryLower);
-    const kanaMatch = row.kana.toLowerCase().includes(queryLower);
+    const muniMatch = row.muni.includes(query);
+    const kanaMatch = row.kana.includes(query);
 
     if (muniMatch || kanaMatch) {
       results.push({
