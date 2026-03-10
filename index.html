@@ -139,116 +139,6 @@
         <!-- 結果表示 -->
         <section id="result" class="result-section"></section>
 
-        <!-- 結果表示 -->
-        <section id="result-demo" class="result-section fade-in">
-          <h2 class="result-header">
-            <span class="result-header-title">〇〇県〇〇市</span>
-            <span class="result-header-sub">の対応状況</span>
-          </h2>
-          <div class="result-legend">
-            <div class="result-legend-item">
-              <span class="legend-badge available">対応可能</span>
-              <span class="legend-desc">通常対応しているエリアです</span>
-            </div>
-            <div class="result-legend-item">
-              <span class="legend-badge consult">要相談</span>
-              <span class="legend-desc">内容や地域条件により対応可否を確認します</span>
-            </div>
-            <div class="result-legend-item">
-              <span class="legend-badge unavailable">対応不可</span>
-              <span class="legend-desc">現在は対応対象外のエリアです</span>
-            </div>
-          </div>
-
-          <!-- 工務店の結果 -->
-          <div class="result-item-group">
-            <h3 class="result-title"><img src="assets/images/logo.png" alt="リベ大工務店" width="127" height="24"></h3>
-            <div class="result-item">
-              <h4 class="result-service">注文住宅</h4>
-              <div class="result-status">
-                <span class="status-badge available">対応可能</span>
-              </div>
-            </div>
-            <div class="result-item">
-              <h4 class="result-service">リノベーション</h4>
-              <div class="result-status">
-                <span class="status-badge consult">要相談</span>
-              </div>
-            </div>
-            <div class="result-item">
-              <h4 class="result-service">オフィス・店舗（新築・リノベーション）</h4>
-              <div class="result-status">
-                <span class="status-badge unavailable">対応不可</span>
-                <p class="result-status-note">※オフィス・店舗のリフォームをご希望の方は「リベ大リフォーム」をご確認ください。</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- リベ大リフォームの結果 -->
-          <div class="result-item-group">
-            <h3 class="result-title"><img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
-            </h3>
-            <div class="result-item">
-              <h4 class="result-service">リフォーム</h4>
-              <div class="result-status">
-                <span class="result-status-label">対応可能工事：</span>
-                <ul class="status-badge-group">
-                  <li class="status-badge partial">大工工事</li>
-                  <li class="status-badge partial">建具（木製）工事</li>
-                  <li class="status-badge partial">設備工事</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- リフォーム各工事の紹介 -->
-          <section class="work-intro">
-            <h3 class="work-intro-title">リフォーム各工事の紹介</h3>
-            <dl class="work-intro-list">
-              <!-- sys：リフォームの対応可能工事の項目には「is_available」classを付与してください -->
-              <dt class="work-intro-term is_available">大工工事</dt>
-              <dd class="work-intro-desc">内装工事、断熱工事、壁の設置・撤去、畳からフローリングへの変更、室内のバリアフリー化、収納棚・スペースの追加、造作家具工事など</dd>
-
-              <dt class="work-intro-term">内装工事</dt>
-              <dd class="work-intro-desc">壁紙の張替え、床（クッションフロア、カーペットなど）の張り替え</dd>
-
-              <dt class="work-intro-term">断熱工事</dt>
-              <dd class="work-intro-desc">開口部の断熱（内窓設置、窓の二重化、玄関ドア交換等）、床・天井・壁の断熱施工</dd>
-
-              <dt class="work-intro-term is_available">建具（木製）工事</dt>
-              <dd class="work-intro-desc">建具の交換・調整、造作建具など</dd>
-
-              <dt class="work-intro-term is_available">設備工事</dt>
-              <dd class="work-intro-desc">キッチン・浴室・洗面台・トイレといった水回り設備の交換、給排水工事、水栓（蛇口）の交換、エコキュートの交換、IHクッキングヒーター交換など</dd>
-
-              <dt class="work-intro-term">ガス工事</dt>
-              <dd class="work-intro-desc">ガス給湯器・ガスコンロの交換、ガス配管工事（ガス栓増設）など</dd>
-
-              <dt class="work-intro-term">塗装工事</dt>
-              <dd class="work-intro-desc">外壁塗装、屋根塗装、コーキング打ち替え、内壁の塗り替えなど</dd>
-
-              <dt class="work-intro-term">外壁修繕</dt>
-              <dd class="work-intro-desc">壁の下地補修、タイル補修、シーリング工事、外壁塗装、屋上防水など</dd>
-
-              <dt class="work-intro-term">板金工事</dt>
-              <dd class="work-intro-desc">カラーベスト葺き替え、ガルバリウム鋼板屋根カバー、雨樋工事など</dd>
-
-              <dt class="work-intro-term">屋根工事</dt>
-              <dd class="work-intro-desc">瓦屋根葺き替え、瓦の修繕など</dd>
-
-              <dt class="work-intro-term">電気工事</dt>
-              <dd class="work-intro-desc">照明・エアコンの設置・交換、コンセント増設、スイッチの交換、不調の修理、インターホン・レンジフード・浴室乾燥機の交換・設置、IHクッキングヒーター交換など
-              </dd>
-
-              <dt class="work-intro-term">シロアリ工事（害虫対策）</dt>
-              <dd class="work-intro-desc">シロアリの駆除・防除、害虫対策など</dd>
-
-              <dt class="work-intro-term">その他</dt>
-              <dd class="work-intro-desc">外構工事、エアコンクリーニング、畳交換など</dd>
-            </dl>
-          </section>
-        </section>
-
       </div>
     </main>
 
@@ -294,7 +184,6 @@
     const elBtn = document.getElementById("btn");
     const elMsg = document.getElementById("msg");
     const elResult = document.getElementById("result");
-    const elResultDemo = document.getElementById("result-demo");
     const elMuniHint = document.getElementById("muniHint");
     const elLoadingOverlay = document.getElementById("loadingOverlay");
     const elLoadingContent = document.getElementById("loadingContent");
@@ -305,6 +194,11 @@
 
     // ==================== リフォーム各工事（対応可能工事CSVから動的構築） ====================
     let reformWorks = []; // loadReformWorks() で構築
+    let reformWorksReady = false;
+    let reformWorksReadyResolve = null;
+    const reformWorksReadyPromise = new Promise(resolve => {
+      reformWorksReadyResolve = resolve;
+    });
 
     // ==================== ユーティリティ関数 ====================
 
@@ -321,7 +215,6 @@
     function clearResult() {
       elResult.innerHTML = "";
       elResult.classList.remove("show");
-      if (elResultDemo) elResultDemo.classList.remove("show");
     }
 
     // 入力無効化・ボタンローディング状態
@@ -408,8 +301,6 @@
 
     // ==================== キャッシュ設定 ====================
     const CACHE_KEY = 'libe_koumu_csv_cache';
-    const CACHE_TIMESTAMP_KEY = 'libe_koumu_csv_timestamp';
-    const CACHE_EXPIRE_MS = 5 * 60 * 1000; // 5分でキャッシュ更新を試みる
 
     // ==================== CSV読み込みと解析 ====================
 
@@ -448,7 +339,6 @@
     function saveToCache(csvText) {
       try {
         localStorage.setItem(CACHE_KEY, csvText);
-        localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
       } catch (e) {
         console.warn('キャッシュ保存エラー:', e);
       }
@@ -546,6 +436,9 @@
         console.log('対応可能工事データ読み込み完了:', reformWorks.length, '件');
       } catch (error) {
         console.error('対応可能工事CSV取得エラー:', error);
+      } finally {
+        reformWorksReady = true;
+        reformWorksReadyResolve();
       }
     }
 
@@ -792,7 +685,24 @@
       }
 
       // ── リベ大リフォームグループ ──
-      if (reformItems.length > 0) {
+      if (reformItems.length > 0 && reformWorks.length === 0) {
+        // 工事情報CSVの取得に失敗した場合の注記
+        const reformNote = document.createElement("div");
+        reformNote.className = "result-item-group";
+        reformNote.innerHTML = `
+            <h3 class="result-title">
+              <img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
+            </h3>
+          `;
+        const noteItem = document.createElement("div");
+        noteItem.className = "result-item";
+        const noteText = document.createElement("p");
+        noteText.className = "result-status-note";
+        noteText.textContent = "工事情報を取得できませんでした。ページを再読み込みしてください。";
+        noteItem.appendChild(noteText);
+        reformNote.appendChild(noteItem);
+        elResult.appendChild(reformNote);
+      } else if (reformItems.length > 0) {
         const reformGroup = document.createElement("div");
         reformGroup.className = "result-item-group";
         reformGroup.innerHTML = `
@@ -891,8 +801,6 @@
       }
 
       elResult.classList.add("show", "fade-in");
-      // result-demo は常に非表示（静的デザインサンプルのため）
-      if (elResultDemo) elResultDemo.classList.remove("show");
     }
 
     // ==================== イベントハンドラ ====================
@@ -971,6 +879,11 @@
           setBusy(false);
           return;
         }
+      }
+
+      // リフォーム工事データの準備を待つ
+      if (!reformWorksReady) {
+        await reformWorksReadyPromise;
       }
 
       // 市区町村の存在チェック
