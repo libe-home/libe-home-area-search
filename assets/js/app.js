@@ -737,10 +737,6 @@ function onPrefChange() {
   if (elMuniHint) {
     elMuniHint.classList.remove("hidden");
   }
-  // 都道府県が選択されたら市区町村入力へフォーカス
-  if (elPref.value) {
-    elMuni.focus();
-  }
 }
 
 /** 市区町村入力時：ヒントの表示切替とサジェスト候補の更新を行う。 */
