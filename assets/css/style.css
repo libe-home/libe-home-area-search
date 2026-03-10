@@ -64,18 +64,6 @@ body {
   top: 0;
   left: 0;
   z-index: 100;
-}
-
-.contents {
-  grid-area: contents;
-}
-
-.footer {
-  grid-area: footer;
-}
-
-/* ヘッダー */
-.header {
   background: #fff;
   box-shadow: 0 2px 11px 0 rgba(0, 0, 0, 0.25);
   margin-bottom: 48px;
@@ -83,6 +71,10 @@ body {
   @media (width <= 600px) {
     margin-bottom: 32px;
   }
+}
+
+.footer {
+  grid-area: footer;
 }
 
 .header-inner {
