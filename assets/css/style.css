@@ -728,7 +728,7 @@ input::placeholder {
 }
 
 .retry-btn:hover {
-  background: var(--color-accent-hover);
+  opacity: 0.7;
 }
 
 .result-status + .result-status {
