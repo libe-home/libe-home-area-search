@@ -354,7 +354,7 @@ function buildIndex() {
 /** データ読み込み完了時にプレースホルダーとヒントテキストを更新する。 */
 function onDataReady() {
   // placeholderを更新
-  elMuni.placeholder = "候補から選択してください";
+  elMuni.placeholder = "市区町村名を入力してください";
 
   // ヒントを更新（ローディング表示を解除）
   if (elMuniHint) {
