@@ -715,9 +715,12 @@ function renderMenu(res) {
 
   elResult.classList.add("show", "fade-in");
 
-  // 結果セクションが見えるようにスムーズスクロール
+  // 結果ヘッダーがスティッキーヘッダー直下に来るようスクロール
   requestAnimationFrame(() => {
-    elResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const headerHeight = document.querySelector(".header")?.offsetHeight || 0;
+    const resultTop = elResult.getBoundingClientRect().top + window.scrollY;
+    const scrollTarget = resultTop - headerHeight - 16;
+    window.scrollTo({ top: scrollTarget, behavior: "smooth" });
   });
 }
 
