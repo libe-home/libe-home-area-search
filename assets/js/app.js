@@ -799,7 +799,7 @@ async function onSubmit() {
   const rows = appData.rowsByPref.get(pref) || [];
   const exists = rows.some(row => row.muni === muni);
   if (!exists) {
-    setMsg('市区町村は候補（プルダウン）から選択してください', "error");
+    setMsg('市区町村は表示された候補から選択してください', "error");
     setBusy(false);
     return;
   }

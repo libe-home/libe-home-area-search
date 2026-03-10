@@ -341,7 +341,8 @@ input::placeholder {
 .message {
   font-size: calc(14 / 16 * 1rem);
   font-weight: 500;
-  width: max-content;
+  width: fit-content;
+  max-width: 100%;
   padding: 2px 12px;
   margin-inline: auto;
   margin-top: 16px;
