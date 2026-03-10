@@ -27,7 +27,7 @@
 
   <!-- CSVフェッチ即時開始（DOMContentLoaded前に開始） -->
   <script>
-    window.__csvFetchPromise = fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1496009444&single=true&output=csv')
+    window.__csvFetchPromise = fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv')
       .then(res => res.ok ? res.text() : Promise.reject('CSV取得失敗'))
       .catch(err => { window.__csvFetchError = err; return null; });
   </script>
@@ -57,7 +57,6 @@
         <nav class="header-nav">
           <a href="https://libe-home.com/" class="header-nav-link">トップページ</a>
           <a href="https://lin.ee/zGxs8aB" class="header-nav-btn">LINEでお問い合わせ</a>
-          </ul>
         </nav>
       </div>
     </header>
@@ -143,120 +142,8 @@
         <!-- エラーメッセージ -->
         <div id="msg" class="message"></div>
 
-        </section>
-
         <!-- 結果表示 -->
         <section id="result" class="result-section"></section>
-
-        <!-- 結果表示 -->
-        <section id="result-demo" class="result-section fade-in">
-          <h2 class="result-header">
-            <span class="result-header-title">〇〇県〇〇市</span>
-            <span class="result-header-sub">の対応状況</span>
-          </h2>
-          <div class="result-legend">
-            <div class="result-legend-item">
-              <span class="legend-badge available">対応可能</span>
-              <span class="legend-desc">通常対応しているエリアです</span>
-            </div>
-            <div class="result-legend-item">
-              <span class="legend-badge consult">要相談</span>
-              <span class="legend-desc">内容や地域条件により対応可否を確認します</span>
-            </div>
-            <div class="result-legend-item">
-              <span class="legend-badge unavailable">対応不可</span>
-              <span class="legend-desc">現在は対応対象外のエリアです</span>
-            </div>
-          </div>
-
-          <!-- 工務店の結果 -->
-          <div class="result-item-group">
-            <h3 class="result-title"><img src="assets/images/logo.png" alt="リベ大工務店" width="127" height="24"></h3>
-            <div class="result-item">
-              <h4 class="result-service">注文住宅</h4>
-              <div class="result-status">
-                <span class="status-badge available">対応可能</span>
-              </div>
-            </div>
-            <div class="result-item">
-              <h4 class="result-service">リノベーション</h4>
-              <div class="result-status">
-                <span class="status-badge consult">要相談</span>
-              </div>
-            </div>
-            <div class="result-item">
-              <h4 class="result-service">オフィス・店舗（新築・リノベーション）</h4>
-              <div class="result-status">
-                <span class="status-badge unavailable">対応不可</span>
-                <p class="result-status-note">※オフィス・店舗のリフォームをご希望の方は「リベ大リフォーム」をご確認ください。</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- リベ大リフォームの結果 -->
-          <div class="result-item-group">
-            <h3 class="result-title"><img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
-            </h3>
-            <div class="result-item">
-              <h4 class="result-service">リフォーム</h4>
-              <div class="result-status">
-                <span class="result-status-label">対応可能工事：</span>
-                <ul class="status-badge-group">
-                  <li class="status-badge partial">大工工事</li>
-                  <li class="status-badge partial">建具（木製）工事</li>
-                  <li class="status-badge partial">設備工事</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- リフォーム各工事の紹介 -->
-          <section class="work-intro">
-            <h3 class="work-intro-title">リフォーム各工事の紹介</h3>
-            <dl class="work-intro-list">
-              <!-- sys：リフォームの対応可能工事の項目には「is_available」classを付与してください -->
-              <dt class="work-intro-term is_available">大工工事</dt>
-              <dd class="work-intro-desc">内装工事、断熱工事、壁の設置・撤去、畳からフローリングへの変更、室内のバリアフリー化、収納棚・スペースの追加、造作家具工事など</dd>
-
-              <dt class="work-intro-term">内装工事</dt>
-              <dd class="work-intro-desc">壁紙の張替え、床（クッションフロア、カーペットなど）の張り替え</dd>
-
-              <dt class="work-intro-term">断熱工事</dt>
-              <dd class="work-intro-desc">開口部の断熱（内窓設置、窓の二重化、玄関ドア交換等）、床・天井・壁の断熱施工</dd>
-
-              <dt class="work-intro-term is_available">建具（木製）工事</dt>
-              <dd class="work-intro-desc">建具の交換・調整、造作建具など</dd>
-
-              <dt class="work-intro-term is_available">設備工事</dt>
-              <dd class="work-intro-desc">キッチン・浴室・洗面台・トイレといった水回り設備の交換、給排水工事、水栓（蛇口）の交換、エコキュートの交換、IHクッキングヒーター交換など</dd>
-
-              <dt class="work-intro-term">ガス工事</dt>
-              <dd class="work-intro-desc">ガス給湯器・ガスコンロの交換、ガス配管工事（ガス栓増設）など</dd>
-
-              <dt class="work-intro-term">塗装工事</dt>
-              <dd class="work-intro-desc">外壁塗装、屋根塗装、コーキング打ち替え、内壁の塗り替えなど</dd>
-
-              <dt class="work-intro-term">外壁修繕</dt>
-              <dd class="work-intro-desc">壁の下地補修、タイル補修、シーリング工事、外壁塗装、屋上防水など</dd>
-
-              <dt class="work-intro-term">板金工事</dt>
-              <dd class="work-intro-desc">カラーベスト葺き替え、ガルバリウム鋼板屋根カバー、雨樋工事など</dd>
-
-              <dt class="work-intro-term">屋根工事</dt>
-              <dd class="work-intro-desc">瓦屋根葺き替え、瓦の修繕など</dd>
-
-              <dt class="work-intro-term">電気工事</dt>
-              <dd class="work-intro-desc">照明・エアコンの設置・交換、コンセント増設、スイッチの交換、不調の修理、インターホン・レンジフード・浴室乾燥機の交換・設置、IHクッキングヒーター交換など
-              </dd>
-
-              <dt class="work-intro-term">シロアリ工事（害虫対策）</dt>
-              <dd class="work-intro-desc">シロアリの駆除・防除、害虫対策など</dd>
-
-              <dt class="work-intro-term">その他</dt>
-              <dd class="work-intro-desc">外構工事、エアコンクリーニング、畳交換など</dd>
-            </dl>
-          </section>
-        </section>
 
       </div>
     </main>
@@ -273,10 +160,11 @@
   <script>
     // ==================== 設定 ====================
     const CONFIG = {
-      CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1496009444&single=true&output=csv',
-      CONTACT_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSeqtoxMGXGZEHZ9x2QbNUdb7g--Fb-yoxjU5VKbuMT5TmJIvw/viewform',
-      HEADER_ROW: 1,        // 1行目にカテゴリ（注文住宅・大規模・小規模・オフィス・店舗）
-      DATA_START_ROW: 2,    // 2行目からデータ開始
+      CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv',
+      REFORM_WORKS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1088443442&single=true&output=csv',
+      KOMUTEN_CATEGORIES: ['注文住宅', 'リノベーション', 'オフィス・店舗'],  // 工務店グループの表示対象列
+      HEADER_ROW: 3,        // 3行目にサービス名（注文住宅・リノベーション・リフォーム_各工事...）
+      DATA_START_ROW: 4,    // 4行目からデータ開始
       FIRST_JUDGE_COL: 4,   // D列から判定列
       SUGGEST_LIMIT: 30
     };
@@ -284,7 +172,7 @@
     // ==================== グローバルデータ ====================
     const appData = {
       table: [],              // 2次元配列（CSVデータ全体）
-      categories: [],         // カテゴリ（1行目 D列以降：注文住宅・大規模・小規模・オフィス・店舗）
+      categories: [],         // カテゴリ（ヘッダー行 D列以降）
       rowsByPref: new Map(),  // 都道府県別インデックス
       isReady: false          // データ準備完了フラグ
     };
@@ -302,29 +190,23 @@
     const elBtn = document.getElementById("btn");
     const elMsg = document.getElementById("msg");
     const elResult = document.getElementById("result");
-    const elResultDemo = document.getElementById("result-demo");
-    const elContactLink = document.getElementById("contactLink");
     const elMuniHint = document.getElementById("muniHint");
     const elLoadingOverlay = document.getElementById("loadingOverlay");
     const elLoadingContent = document.getElementById("loadingContent");
 
     let suggestTimer = null;
     let loadingTimeout = null;
+    const BTN_ORIGINAL_HTML = elBtn.innerHTML;
 
-    // ==================== カテゴリー名の変換マップ ====================
-    const categoryNameMap = {
-      "大規模": "大規模リフォーム",
-      "小規模": "小規模リフォーム",
-      "オフィス・店舗": "オフィス・店舗"
-    };
+    // ==================== リフォーム各工事（対応可能工事CSVから動的構築） ====================
+    let reformWorks = []; // loadReformWorks() で構築
+    let reformWorksReady = false;
+    let reformWorksReadyResolve = null;
+    const reformWorksReadyPromise = new Promise(resolve => {
+      reformWorksReadyResolve = resolve;
+    });
 
     // ==================== ユーティリティ関数 ====================
-
-    // カテゴリー名を変換
-    function formatCategoryName(category) {
-      if (!category) return "";
-      return categoryNameMap[category] || category;
-    }
 
     // メッセージ表示（エラーのみ）
     function setMsg(text, kind) {
@@ -339,50 +221,37 @@
     function clearResult() {
       elResult.innerHTML = "";
       elResult.classList.remove("show");
-      if (elResultDemo) elResultDemo.classList.remove("show");
     }
 
-    // 入力無効化
+    // 入力無効化・ボタンローディング状態
     function setBusy(isBusy) {
       elBtn.disabled = isBusy;
       elPref.disabled = isBusy;
       elMuni.disabled = isBusy;
-    }
-
-    // 検索中UI表示
-    function showSearching(pref, muni) {
-      clearResult();
-
-      const header = document.createElement("div");
-      header.className = "result-header searching";
-      header.id = "resultHeader";
-      header.innerHTML = `
-          <div class="result-header-title">検索中<span class="searching-dots"></span></div>
-          <div class="result-header-sub">${pref} ${muni}</div>
-        `;
-      elResult.appendChild(header);
-      elResult.classList.add("show");
-      if (elResultDemo) elResultDemo.classList.add("show");
+      if (isBusy) {
+        elBtn.classList.add('btn--loading');
+        elBtn.innerHTML = '<span class="btn-spinner"></span>検索中...';
+      } else {
+        elBtn.classList.remove('btn--loading');
+        elBtn.innerHTML = BTN_ORIGINAL_HTML;
+      }
     }
 
     // 判定値のスタイル判定
     function getStatusClass(value) {
-      if (!value || value === "" || value === "—") return "unavailable";
-      // 非対応エリア・対応エリア外を先に判定
+      if (!value || value === "" || value === "—" || value === "対応不可") return "unavailable";
       if (value.includes("非対応") || value.includes("対応エリア外")) return "unavailable";
-      // 要相談を含む場合（工事種類＋要相談の組み合わせも含む）
       if (value.includes("要相談")) return "consult";
-      // 対応可・○
-      if (value === "○" || value === "対応可") return "available";
-      // その他（工事種類のリストなど）は対応可能として扱う
-      return "available";
+      if (value === "対応可能" || value === "○" || value === "◯" || value === "対応可") return "available";
+      return "unavailable";
     }
 
-    // 判定値の表示テキスト（カンマ区切りを改行に変換）
+    // 判定値の表示テキスト
     function getStatusText(value) {
-      if (!value || value === "") return "対応エリア外";
-      // カンマ区切りを改行に変換
-      return value.replace(/,/g, '\n');
+      if (!value || value === "" || value === "対応不可") return "対応不可";
+      if (value.includes("要相談")) return "要相談";
+      if (value === "対応可能" || value === "○" || value === "◯" || value === "対応可") return "対応可能";
+      return "対応不可";
     }
 
     // ローディング表示制御
@@ -438,8 +307,6 @@
 
     // ==================== キャッシュ設定 ====================
     const CACHE_KEY = 'libe_koumu_csv_cache';
-    const CACHE_TIMESTAMP_KEY = 'libe_koumu_csv_timestamp';
-    const CACHE_EXPIRE_MS = 5 * 60 * 1000; // 5分でキャッシュ更新を試みる
 
     // ==================== CSV読み込みと解析 ====================
 
@@ -454,7 +321,7 @@
       // ヘッダ読み取り（1行目からカテゴリを取得）
       const headerRow = appData.table[CONFIG.HEADER_ROW - 1];
 
-      // D列以降を取得（index 3以降：注文住宅・大規模・小規模・オフィス・店舗）
+      // D列以降を取得
       appData.categories = headerRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
 
       // インデックス構築
@@ -478,20 +345,8 @@
     function saveToCache(csvText) {
       try {
         localStorage.setItem(CACHE_KEY, csvText);
-        localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
       } catch (e) {
         console.warn('キャッシュ保存エラー:', e);
-      }
-    }
-
-    // キャッシュが古いかチェック
-    function isCacheStale() {
-      try {
-        const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-        if (!timestamp) return true;
-        return (Date.now() - parseInt(timestamp, 10)) > CACHE_EXPIRE_MS;
-      } catch (e) {
-        return true;
       }
     }
 
@@ -569,6 +424,30 @@
       }
     }
 
+    // ==================== 対応可能工事CSV読み込み ====================
+    async function loadReformWorks() {
+      try {
+        const response = await fetch(CONFIG.REFORM_WORKS_CSV_URL);
+        if (!response.ok) throw new Error('対応可能工事CSV取得失敗');
+        const csvText = await response.text();
+        const parsed = Papa.parse(csvText, { skipEmptyLines: true });
+        // 行1(コメント)・行2(ヘッダー)をスキップ
+        reformWorks = parsed.data.slice(2)
+          .filter(row => row[0] && row[0].trim())
+          .map(row => ({
+            name: row[0].trim(),
+            colKey: 'リフォーム_' + row[0].trim(),
+            desc: row[1] ? row[1].trim() : ''
+          }));
+        console.log('対応可能工事データ読み込み完了:', reformWorks.length, '件');
+      } catch (error) {
+        console.error('対応可能工事CSV取得エラー:', error);
+      } finally {
+        reformWorksReady = true;
+        reformWorksReadyResolve();
+      }
+    }
+
     // インデックス構築（都道府県別Map）
     function buildIndex() {
       appData.rowsByPref = new Map();
@@ -592,14 +471,6 @@
           rowData: row
         });
       }
-    }
-
-    // ==================== UI初期化 ====================
-
-    function initializeUI() {
-      // お問い合わせリンク設定
-      elContactLink.href = CONFIG.CONTACT_URL;
-      elContactLink.target = "_blank";
     }
 
     // データ読み込み完了時のUI更新
@@ -676,30 +547,6 @@
       suggestTimer = setTimeout(requestSuggest, 200);
     }
 
-    // ==================== バリデーション ====================
-
-    function validateInput(pref, muni) {
-      if (!pref) {
-        return { ok: false, message: '都道府県を選択してください' };
-      }
-
-      if (!muni) {
-        return { ok: false, message: '市区町村を入力してください' };
-      }
-
-      const rows = appData.rowsByPref.get(pref) || [];
-      const exists = rows.some(row => row.muni === muni);
-
-      if (!exists) {
-        return {
-          ok: false,
-          message: '市区町村は候補（プルダウン）から選択してください'
-        };
-      }
-
-      return { ok: true };
-    }
-
     // ==================== 判定処理 ====================
 
     function getJudgement(pref, muni) {
@@ -759,15 +606,20 @@
 
       const items = res.items || [];
 
+      // ヘッダー
       const header = document.createElement("div");
       header.className = "result-header";
-      header.innerHTML = `
-          <h2 class="result-header-title">${res.pref} ${res.muni}</h2>
-          <div class="result-header-sub">の対応状況</div>
-        `;
+      const headerTitle = document.createElement("h2");
+      headerTitle.className = "result-header-title";
+      headerTitle.textContent = `${res.pref} ${res.muni}`;
+      header.appendChild(headerTitle);
+      const headerSub = document.createElement("div");
+      headerSub.className = "result-header-sub";
+      headerSub.textContent = "の対応状況";
+      header.appendChild(headerSub);
       elResult.appendChild(header);
 
-      // 凡例を追加
+      // 凡例
       const legend = document.createElement("div");
       legend.className = "result-legend";
       legend.innerHTML = `
@@ -786,36 +638,175 @@
         `;
       elResult.appendChild(legend);
 
-      items.forEach(it => {
-        const card = document.createElement("div");
-        card.className = "result-item";
+      // カテゴリをグループに分類
+      const komutenItems = items.filter(it => CONFIG.KOMUTEN_CATEGORIES.includes(it.category));
+      const reformItems  = items.filter(it => it.category.startsWith('リフォーム_'));
 
-        const serviceName = document.createElement("div");
-        serviceName.className = "result-service";
-        const formattedCategory = formatCategoryName(it.category ?? "");
-        serviceName.textContent = formattedCategory;
-        card.appendChild(serviceName);
+      // ── 工務店グループ ──
+      if (komutenItems.length > 0) {
+        const komutenGroup = document.createElement("div");
+        komutenGroup.className = "result-item-group";
+        komutenGroup.innerHTML = `
+            <h3 class="result-title">
+              <img src="assets/images/logo.png" alt="リベ大工務店" width="127" height="24">
+            </h3>
+          `;
 
-        const statusRow = document.createElement("div");
-        statusRow.className = "result-status";
+        komutenItems.forEach(it => {
+          const value       = it.value ?? "";
+          const statusClass = getStatusClass(value);
+          const statusText  = getStatusText(value);
+          const displayName = it.category === 'オフィス・店舗'
+            ? 'オフィス・店舗（新築・リノベーション）'
+            : it.category;
 
-        const statusLabel = document.createElement("span");
-        statusLabel.className = "result-status-label";
-        statusLabel.textContent = "状況：";
-        statusRow.appendChild(statusLabel);
+          const item = document.createElement("div");
+          item.className = "result-item";
 
-        const value = it.value ?? "";
-        const badge = document.createElement("span");
-        badge.className = `status-badge ${getStatusClass(value)}`;
-        badge.textContent = getStatusText(value);
-        statusRow.appendChild(badge);
+          const serviceEl = document.createElement("h4");
+          serviceEl.className = "result-service";
+          serviceEl.textContent = displayName;
+          item.appendChild(serviceEl);
 
-        card.appendChild(statusRow);
-        elResult.appendChild(card);
-      });
+          const statusDiv = document.createElement("div");
+          statusDiv.className = "result-status";
+
+          const badge = document.createElement("span");
+          badge.className = `status-badge ${statusClass}`;
+          badge.textContent = statusText;
+          statusDiv.appendChild(badge);
+
+          if (it.category === 'オフィス・店舗' && statusClass === 'unavailable') {
+            const noteEl = document.createElement("p");
+            noteEl.className = "result-status-note";
+            noteEl.textContent = "※オフィス・店舗のリフォームをご希望の方は「リベ大リフォーム」をご確認ください。";
+            statusDiv.appendChild(noteEl);
+          }
+
+          item.appendChild(statusDiv);
+          komutenGroup.appendChild(item);
+        });
+
+        elResult.appendChild(komutenGroup);
+      }
+
+      // ── リベ大リフォームグループ ──
+      if (reformItems.length > 0 && reformWorks.length === 0) {
+        // 工事情報CSVの取得に失敗した場合の注記
+        const reformNote = document.createElement("div");
+        reformNote.className = "result-item-group";
+        reformNote.innerHTML = `
+            <h3 class="result-title">
+              <img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
+            </h3>
+          `;
+        const noteItem = document.createElement("div");
+        noteItem.className = "result-item";
+        const noteText = document.createElement("p");
+        noteText.className = "result-status-note";
+        noteText.textContent = "工事情報を取得できませんでした。ページを再読み込みしてください。";
+        noteItem.appendChild(noteText);
+        reformNote.appendChild(noteItem);
+        elResult.appendChild(reformNote);
+      } else if (reformItems.length > 0) {
+        const reformGroup = document.createElement("div");
+        reformGroup.className = "result-item-group";
+        reformGroup.innerHTML = `
+            <h3 class="result-title">
+              <img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
+            </h3>
+          `;
+
+        // 各工事の対応状況をMapで保持（列名→値）
+        const reformMap = new Map(reformItems.map(it => [it.category, it.value ?? ""]));
+
+        const availableWorks = reformWorks
+          .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available')
+          .map(work => work.name);
+        const consultWorks = reformWorks
+          .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult')
+          .map(work => work.name);
+
+        // リフォーム result-item
+        const reformResultItem = document.createElement("div");
+        reformResultItem.className = "result-item";
+
+        const reformServiceTitle = document.createElement("h4");
+        reformServiceTitle.className = "result-service";
+        reformServiceTitle.textContent = "リフォーム";
+        reformResultItem.appendChild(reformServiceTitle);
+
+        if (availableWorks.length === 0 && consultWorks.length === 0) {
+          const statusDiv = document.createElement("div");
+          statusDiv.className = "result-status";
+          const badge = document.createElement("span");
+          badge.className = "status-badge unavailable";
+          badge.textContent = "対応不可";
+          statusDiv.appendChild(badge);
+          reformResultItem.appendChild(statusDiv);
+        } else {
+          // バッジリスト生成ヘルパー
+          const appendBadgeGroup = (works, labelText, badgeClass) => {
+            if (works.length === 0) return;
+            const statusDiv = document.createElement("div");
+            statusDiv.className = "result-status";
+            const label = document.createElement("span");
+            label.className = "result-status-label";
+            label.textContent = labelText;
+            statusDiv.appendChild(label);
+            const ul = document.createElement("ul");
+            ul.className = "status-badge-group";
+            works.forEach(w => {
+              const li = document.createElement("li");
+              li.className = `status-badge ${badgeClass}`;
+              li.textContent = w;
+              ul.appendChild(li);
+            });
+            statusDiv.appendChild(ul);
+            reformResultItem.appendChild(statusDiv);
+          };
+          appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
+          appendBadgeGroup(consultWorks, "要相談工事：", "consult");
+        }
+        reformGroup.appendChild(reformResultItem);
+
+        // リフォーム各工事の紹介（動的 is_available 付与）
+        const workIntro = document.createElement("section");
+        workIntro.className = "work-intro";
+
+        const workIntroTitle = document.createElement("h3");
+        workIntroTitle.className = "work-intro-title";
+        workIntroTitle.textContent = "リフォーム各工事の紹介";
+        workIntro.appendChild(workIntroTitle);
+
+        const workIntroList = document.createElement("dl");
+        workIntroList.className = "work-intro-list";
+
+        reformWorks.forEach(work => {
+          const workValue = reformMap.get(work.colKey) ?? "";
+          const workStatus  = getStatusClass(workValue);
+          const isAvailable = workStatus === 'available';
+          const isConsult   = workStatus === 'consult';
+
+          const dt = document.createElement("dt");
+          dt.className = `work-intro-term${isAvailable ? ' is_available' : isConsult ? ' is_consult' : ''}`;
+          dt.textContent = work.name;
+
+          const dd = document.createElement("dd");
+          dd.className = "work-intro-desc";
+          dd.textContent = work.desc;
+
+          workIntroList.appendChild(dt);
+          workIntroList.appendChild(dd);
+        });
+
+        workIntro.appendChild(workIntroList);
+        reformGroup.appendChild(workIntro);
+
+        elResult.appendChild(reformGroup);
+      }
 
       elResult.classList.add("show", "fade-in");
-      if (elResultDemo) elResultDemo.classList.add("show", "fade-in");
     }
 
     // ==================== イベントハンドラ ====================
@@ -896,6 +887,11 @@
         }
       }
 
+      // リフォーム工事データの準備を待つ
+      if (!reformWorksReady) {
+        await reformWorksReadyPromise;
+      }
+
       // 市区町村の存在チェック
       const rows = appData.rowsByPref.get(pref) || [];
       const exists = rows.some(row => row.muni === muni);
@@ -904,8 +900,6 @@
         setBusy(false);
         return;
       }
-
-      showSearching(pref, muni);
 
       setTimeout(() => {
         const result = getJudgement(pref, muni);
@@ -917,20 +911,14 @@
     // ==================== 初期化 ====================
 
     document.addEventListener("DOMContentLoaded", () => {
-      console.log('[CSV] DOMContentLoaded 発火');
-      // お問い合わせリンク設定（要素がある場合のみ）
-      if (elContactLink) {
-        elContactLink.href = CONFIG.CONTACT_URL;
-        elContactLink.target = "_blank";
-      }
-
       // イベントリスナー設定
       elPref.addEventListener("change", onPrefChange);
       elMuni.addEventListener("input", onMuniInput);
       elBtn.addEventListener("click", onSubmit);
 
-      // CSVデータをバックグラウンドで取得（UIをブロックしない）
+      // CSVデータをバックグラウンドで並列取得
       loadAndParseCSV();
+      loadReformWorks();
     });
   </script>
 </body>
