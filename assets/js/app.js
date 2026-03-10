@@ -346,7 +346,6 @@ function buildIndex() {
     appData.rowsByPref.get(pref).push({
       muni,
       kana,
-      rowIndex: i + 1,
       rowData: row
     });
   }
