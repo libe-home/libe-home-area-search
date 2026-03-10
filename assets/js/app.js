@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
   elPref.addEventListener("change", onPrefChange);
   elMuni.addEventListener("input", onMuniInput);
   elMuni.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.isComposing) {
       e.preventDefault();
       onSubmit();
     }
