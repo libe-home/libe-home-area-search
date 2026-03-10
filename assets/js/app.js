@@ -77,21 +77,27 @@ function setBusy(isBusy) {
   }
 }
 
-// 判定値のスタイル判定
-function getStatusClass(value) {
-  if (!value || value === "" || value === "—" || value === "対応不可") return "unavailable";
-  if (value.includes("非対応") || value.includes("対応エリア外")) return "unavailable";
-  if (value.includes("要相談")) return "consult";
-  if (value === "対応可能" || value === "○" || value === "◯" || value === "対応可") return "available";
-  return "unavailable";
+// ステータス定義（判定ロジックを一元管理）
+const STATUS_MAP = {
+  available:   { cssClass: "available",   label: "対応可能" },
+  consult:     { cssClass: "consult",     label: "要相談" },
+  unavailable: { cssClass: "unavailable", label: "対応不可" }
+};
+
+function resolveStatus(value) {
+  if (!value || value === "" || value === "—" || value === "対応不可") return STATUS_MAP.unavailable;
+  if (value.includes("非対応") || value.includes("対応エリア外")) return STATUS_MAP.unavailable;
+  if (value.includes("要相談")) return STATUS_MAP.consult;
+  if (value === "対応可能" || value === "○" || value === "◯" || value === "対応可") return STATUS_MAP.available;
+  return STATUS_MAP.unavailable;
 }
 
-// 判定値の表示テキスト
+function getStatusClass(value) {
+  return resolveStatus(value).cssClass;
+}
+
 function getStatusText(value) {
-  if (!value || value === "" || value === "対応不可") return "対応不可";
-  if (value.includes("要相談")) return "要相談";
-  if (value === "対応可能" || value === "○" || value === "◯" || value === "対応可") return "対応可能";
-  return "対応不可";
+  return resolveStatus(value).label;
 }
 
 // ローディング表示制御
