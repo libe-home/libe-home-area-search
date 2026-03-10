@@ -274,6 +274,8 @@ input::placeholder {
 .card:has(#pref:invalid) #muni {
   pointer-events: none;
   background-image: none;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ボタン（フル幅） */
