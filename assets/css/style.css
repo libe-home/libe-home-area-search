@@ -30,9 +30,14 @@
   padding: 0;
 }
 
-a:hover {
-  opacity: 0.7;
+a {
   transition: opacity 0.3s;
+}
+
+@media (any-hover: hover) {
+  a:hover {
+    opacity: 0.7;
+  }
 }
 
 body {
@@ -64,18 +69,6 @@ body {
   top: 0;
   left: 0;
   z-index: 100;
-}
-
-.contents {
-  grid-area: contents;
-}
-
-.footer {
-  grid-area: footer;
-}
-
-/* ヘッダー */
-.header {
   background: #fff;
   box-shadow: 0 2px 11px 0 rgba(0, 0, 0, 0.25);
   margin-bottom: 48px;
@@ -83,6 +76,14 @@ body {
   @media (width <= 600px) {
     margin-bottom: 32px;
   }
+}
+
+main {
+  grid-area: contents;
+}
+
+.footer {
+  grid-area: footer;
 }
 
 .header-inner {
@@ -184,8 +185,7 @@ body {
   }
 }
 
-select,
-input[type="text"] {
+select {
   width: 100%;
   min-height: 42px;
   padding: 8px 16px;
@@ -200,8 +200,7 @@ input[type="text"] {
   -webkit-appearance: none;
 }
 
-select,
-input[type="text"] {
+select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234b4642' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
@@ -211,21 +210,18 @@ input[type="text"] {
   position: relative;
 }
 
-select:focus,
-input[type="text"]:focus {
+select:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(72, 153, 129, 0.15);
 }
 
-/* datalist のブラウザ標準矢印を非表示（市区町村入力） */
-input[type="text"][list]::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  pointer-events: none;
+/* 市区町村が「選択してください」のとき（値が空＝:invalid）は文字色をplaceholderと同じに */
+#muni:invalid {
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
 }
 
-select:disabled,
-input:disabled {
+select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   background: #f0ede8;
@@ -234,11 +230,6 @@ input:disabled {
 /* 都道府県が「選択してください」のとき（値が空＝:invalid）は文字色をplaceholderと同じに */
 #pref:invalid {
   color: color-mix(in srgb, var(--color-text) 60%, transparent);
-}
-
-input::placeholder {
-  color: color-mix(in srgb, var(--color-text) 60%, transparent);
-  font-size: 1rem;
 }
 
 .form-hint {
@@ -274,10 +265,15 @@ input::placeholder {
   vertical-align: middle;
 }
 
-/* 都道府県未選択時は市区町村入力を非活性 */
+/* 都道府県未選択時は市区町村セレクトを非活性 */
 .card:has(#pref:invalid) #muni {
   pointer-events: none;
-  background-image: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card:has(#pref:invalid) #muniHint {
+  display: none;
 }
 
 /* ボタン（フル幅） */
@@ -315,8 +311,10 @@ input::placeholder {
   transform: rotate(45deg);
 }
 
-.btn:hover:not(:disabled) {
-  opacity: 0.7;
+@media (any-hover: hover) {
+  .btn:hover:not(:disabled) {
+    opacity: 0.7;
+  }
 }
 
 .btn:disabled {
@@ -345,9 +343,10 @@ input::placeholder {
 
 /* エラーメッセージ */
 .message {
-  font-size: calc(14 / 16 * 1rem) !important;
+  font-size: calc(14 / 16 * 1rem);
   font-weight: 500;
-  width: max-content;
+  width: fit-content;
+  max-width: 100%;
   padding: 2px 12px;
   margin-inline: auto;
   margin-top: 16px;
@@ -530,6 +529,7 @@ input::placeholder {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  list-style: none;
 }
 
 /* リフォーム各工事の紹介 */
@@ -728,8 +728,10 @@ input::placeholder {
   transition: background 0.2s;
 }
 
-.retry-btn:hover {
-  background: var(--color-accent-hover);
+@media (any-hover: hover) {
+  .retry-btn:hover {
+    opacity: 0.7;
+  }
 }
 
 .result-status + .result-status {
