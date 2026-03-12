@@ -611,8 +611,9 @@ function renderReformGroup(reformItems, masterValue) {
   reformWorks.forEach(work => {
     const workValue = reformMap.get(work.colKey) ?? "";
     const workStatus  = getStatusClass(workValue);
-    const isAvailable = workStatus === 'available';
-    const isConsult   = workStatus === 'consult';
+    const isUnavailableMaster = masterStatus === STATUS_MAP.unavailable;
+    const isAvailable = isUnavailableMaster && workStatus === 'available';
+    const isConsult   = isUnavailableMaster && workStatus === 'consult';
 
     const dt = document.createElement("dt");
     dt.className = `work-intro-term${isAvailable ? ' is_available' : isConsult ? ' is_consult' : ''}`;
