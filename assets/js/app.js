@@ -498,7 +498,7 @@ function renderKomutenGroup(komutenItems) {
  * 対応可能/要相談の工事一覧をバッジで表示し、各工事の紹介セクションも含む。
  * 工事情報CSV未取得時はエラーメッセージを表示する。
  */
-function renderReformGroup(reformItems) {
+function renderReformGroup(reformItems, masterValue) {
   const group = document.createElement("div");
   group.className = "result-item-group";
   group.innerHTML = `
@@ -522,12 +522,8 @@ function renderReformGroup(reformItems) {
   // 各工事の対応状況をMapで保持（列名→値）
   const reformMap = new Map(reformItems.map(it => [it.category, it.value ?? ""]));
 
-  const availableWorks = reformWorks
-    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available')
-    .map(work => work.name);
-  const consultWorks = reformWorks
-    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult')
-    .map(work => work.name);
+  // マスター列（工務店リフォーム）の判定でリフォーム欄の表示を分岐
+  const masterStatus = resolveStatus(masterValue);
 
   // リフォーム result-item
   const reformResultItem = document.createElement("div");
@@ -538,37 +534,65 @@ function renderReformGroup(reformItems) {
   reformServiceTitle.textContent = "リフォーム";
   reformResultItem.appendChild(reformServiceTitle);
 
-  if (availableWorks.length === 0 && consultWorks.length === 0) {
+  if (masterStatus === STATUS_MAP.available) {
+    // マスター値「対応可能」→ 「全工事対応可能」バッジ1つのみ
     const statusDiv = document.createElement("div");
     statusDiv.className = "result-status";
     const badge = document.createElement("span");
-    badge.className = "status-badge unavailable";
-    badge.textContent = "対応不可";
+    badge.className = "status-badge available";
+    badge.textContent = "全工事対応可能";
+    statusDiv.appendChild(badge);
+    reformResultItem.appendChild(statusDiv);
+  } else if (masterStatus === STATUS_MAP.consult) {
+    // マスター値「要相談」→ 「要相談」バッジ1つのみ
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "result-status";
+    const badge = document.createElement("span");
+    badge.className = "status-badge consult";
+    badge.textContent = "要相談";
     statusDiv.appendChild(badge);
     reformResultItem.appendChild(statusDiv);
   } else {
-    // バッジリスト生成ヘルパー
-    const appendBadgeGroup = (works, labelText, badgeClass) => {
-      if (works.length === 0) return;
+    // マスター値「対応不可」→ 個別工事を一覧表示（従来の動作）
+    const availableWorks = reformWorks
+      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available')
+      .map(work => work.name);
+    const consultWorks = reformWorks
+      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult')
+      .map(work => work.name);
+
+    if (availableWorks.length === 0 && consultWorks.length === 0) {
       const statusDiv = document.createElement("div");
       statusDiv.className = "result-status";
-      const label = document.createElement("span");
-      label.className = "result-status-label";
-      label.textContent = labelText;
-      statusDiv.appendChild(label);
-      const ul = document.createElement("ul");
-      ul.className = "status-badge-group";
-      works.forEach(w => {
-        const li = document.createElement("li");
-        li.className = `status-badge ${badgeClass}`;
-        li.textContent = w;
-        ul.appendChild(li);
-      });
-      statusDiv.appendChild(ul);
+      const badge = document.createElement("span");
+      badge.className = "status-badge unavailable";
+      badge.textContent = "対応不可";
+      statusDiv.appendChild(badge);
       reformResultItem.appendChild(statusDiv);
-    };
-    appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
-    appendBadgeGroup(consultWorks, "要相談工事：", "consult");
+    } else {
+      // バッジリスト生成ヘルパー
+      const appendBadgeGroup = (works, labelText, badgeClass) => {
+        if (works.length === 0) return;
+        const statusDiv = document.createElement("div");
+        statusDiv.className = "result-status";
+        const label = document.createElement("span");
+        label.className = "result-status-label";
+        label.textContent = labelText;
+        statusDiv.appendChild(label);
+        const ul = document.createElement("ul");
+        ul.className = "status-badge-group";
+        works.forEach(w => {
+          const li = document.createElement("li");
+          li.className = `status-badge ${badgeClass}`;
+          li.textContent = w;
+          ul.appendChild(li);
+        });
+        statusDiv.appendChild(ul);
+        reformResultItem.appendChild(statusDiv);
+      };
+      appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
+      appendBadgeGroup(consultWorks, "要相談工事：", "consult");
+    }
   }
   group.appendChild(reformResultItem);
 
@@ -587,8 +611,9 @@ function renderReformGroup(reformItems) {
   reformWorks.forEach(work => {
     const workValue = reformMap.get(work.colKey) ?? "";
     const workStatus  = getStatusClass(workValue);
-    const isAvailable = workStatus === 'available';
-    const isConsult   = workStatus === 'consult';
+    const isUnavailableMaster = masterStatus === STATUS_MAP.unavailable;
+    const isAvailable = isUnavailableMaster && workStatus === 'available';
+    const isConsult   = isUnavailableMaster && workStatus === 'consult';
 
     const dt = document.createElement("dt");
     dt.className = `work-intro-term${isAvailable ? ' is_available' : isConsult ? ' is_consult' : ''}`;
@@ -659,13 +684,15 @@ function renderMenu(res) {
   // カテゴリをグループに分類
   const komutenItems = items.filter(it => CONFIG.KOMUTEN_CATEGORIES.includes(it.category));
   const reformItems  = items.filter(it => it.category.startsWith('リフォーム_'));
+  const reformMaster = items.find(it => it.category === 'リフォーム');
+  const reformMasterValue = reformMaster ? reformMaster.value : '';
 
   if (komutenItems.length > 0) {
     elResult.appendChild(renderKomutenGroup(komutenItems));
   }
 
-  if (reformItems.length > 0) {
-    elResult.appendChild(renderReformGroup(reformItems));
+  if (reformItems.length > 0 || reformMasterValue) {
+    elResult.appendChild(renderReformGroup(reformItems, reformMasterValue));
   }
 
   elResult.classList.add("show", "fade-in");
