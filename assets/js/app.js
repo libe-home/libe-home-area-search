@@ -549,17 +549,31 @@ function renderReformGroup(reformItems, masterValue) {
   reformServiceTitle.textContent = "リフォーム";
   reformResultItem.appendChild(reformServiceTitle);
 
+  // 個別工事の対応状況を集計
+  const availableWorks = reformWorks
+    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available');
+  const consultWorks = reformWorks
+    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult');
+  const hasAnyWorks = availableWorks.length > 0 || consultWorks.length > 0;
+
+  // リフォームセクションに「LINEで問い合わせる」を表示するか
+  let showReformLineLink = false;
+  // 各工事の紹介を表示するか
+  let showWorkIntro = false;
+
   if (masterStatus === STATUS_MAP.available) {
-    // マスター値「対応可能」→ 「全工事対応可能」バッジ1つのみ
+    // マスター値「対応可能」→ 「対応可能」バッジ
     const statusDiv = document.createElement("div");
     statusDiv.className = "result-status";
     const badge = document.createElement("span");
     badge.className = "status-badge available";
-    badge.textContent = "全工事対応可能";
+    badge.textContent = "対応可能";
     statusDiv.appendChild(badge);
     reformResultItem.appendChild(statusDiv);
+    showReformLineLink = true;
+    showWorkIntro = true;
   } else if (masterStatus === STATUS_MAP.consult) {
-    // マスター値「要相談」→ 「要相談」バッジ1つのみ
+    // マスター値「要相談」→ 「要相談」バッジ
     const statusDiv = document.createElement("div");
     statusDiv.className = "result-status";
     const badge = document.createElement("span");
@@ -567,16 +581,12 @@ function renderReformGroup(reformItems, masterValue) {
     badge.textContent = "要相談";
     statusDiv.appendChild(badge);
     reformResultItem.appendChild(statusDiv);
+    showReformLineLink = true;
+    showWorkIntro = true;
   } else {
-    // マスター値「対応不可」→ 個別工事を一覧表示（従来の動作）
-    const availableWorks = reformWorks
-      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available')
-      .map(work => work.name);
-    const consultWorks = reformWorks
-      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult')
-      .map(work => work.name);
-
-    if (availableWorks.length === 0 && consultWorks.length === 0) {
+    // マスター値「対応不可」→ 個別工事を確認
+    if (!hasAnyWorks) {
+      // すべて対応不可 → 「対応不可」バッジ、工事紹介なし
       const statusDiv = document.createElement("div");
       statusDiv.className = "result-status";
       const badge = document.createElement("span");
@@ -585,7 +595,7 @@ function renderReformGroup(reformItems, masterValue) {
       statusDiv.appendChild(badge);
       reformResultItem.appendChild(statusDiv);
     } else {
-      // バッジリスト生成ヘルパー
+      // 一部工事のみ対応可能 → 対応可能・要相談の工事のみバッジ表示
       const appendBadgeGroup = (works, labelText, badgeClass) => {
         if (works.length === 0) return;
         const statusDiv = document.createElement("div");
@@ -599,7 +609,7 @@ function renderReformGroup(reformItems, masterValue) {
         works.forEach(w => {
           const li = document.createElement("li");
           li.className = `status-badge ${badgeClass}`;
-          li.textContent = w;
+          li.textContent = w.name;
           ul.appendChild(li);
         });
         statusDiv.appendChild(ul);
@@ -607,43 +617,81 @@ function renderReformGroup(reformItems, masterValue) {
       };
       appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
       appendBadgeGroup(consultWorks, "要相談工事：", "consult");
+      showReformLineLink = true;
+      showWorkIntro = true;
     }
   }
+
+  // LINEで問い合わせるテキストリンク
+  if (showReformLineLink) {
+    reformResultItem.appendChild(createLineLink());
+  }
+
   group.appendChild(reformResultItem);
 
-  // リフォーム各工事の紹介（動的 is_available 付与）
-  const workIntro = document.createElement("section");
-  workIntro.className = "work-intro";
+  // リフォーム各工事の紹介（アコーディオン）
+  if (showWorkIntro) {
+    const workIntro = document.createElement("section");
+    workIntro.className = "work-intro";
 
-  const workIntroTitle = document.createElement("h3");
-  workIntroTitle.className = "work-intro-title";
-  workIntroTitle.textContent = "リフォーム各工事の紹介";
-  workIntro.appendChild(workIntroTitle);
+    // ヘッダー（タイトル + トグルボタン）
+    const workIntroHeader = document.createElement("div");
+    workIntroHeader.className = "work-intro-header";
 
-  const workIntroList = document.createElement("dl");
-  workIntroList.className = "work-intro-list";
+    const workIntroTitle = document.createElement("h3");
+    workIntroTitle.className = "work-intro-title";
+    workIntroTitle.textContent = "リフォーム各工事の紹介";
+    workIntroHeader.appendChild(workIntroTitle);
 
-  reformWorks.forEach(work => {
-    const workValue = reformMap.get(work.colKey) ?? "";
-    const workStatus  = getStatusClass(workValue);
-    const isUnavailableMaster = masterStatus === STATUS_MAP.unavailable;
-    const isAvailable = isUnavailableMaster && workStatus === 'available';
-    const isConsult   = isUnavailableMaster && workStatus === 'consult';
+    const toggleBtn = document.createElement("button");
+    toggleBtn.className = "work-intro-toggle";
+    toggleBtn.type = "button";
+    toggleBtn.innerHTML = '<span class="is-open">詳しく見る</span><span class="is-close">閉じる</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9" /></svg>';
+    workIntroHeader.appendChild(toggleBtn);
 
-    const dt = document.createElement("dt");
-    dt.className = `work-intro-term${isAvailable ? ' is_available' : isConsult ? ' is_consult' : ''}`;
-    dt.textContent = work.name;
+    workIntro.appendChild(workIntroHeader);
 
-    const dd = document.createElement("dd");
-    dd.className = "work-intro-desc";
-    dd.textContent = work.desc;
+    // コンテンツ（初期状態は閉じている）
+    const workIntroContent = document.createElement("div");
+    workIntroContent.className = "work-intro-content";
 
-    workIntroList.appendChild(dt);
-    workIntroList.appendChild(dd);
-  });
+    const workIntroList = document.createElement("dl");
+    workIntroList.className = "work-intro-list";
 
-  workIntro.appendChild(workIntroList);
-  group.appendChild(workIntro);
+    // 工事紹介リストへの追加ヘルパー
+    const appendWorkItem = (work, cssClass) => {
+      const dt = document.createElement("dt");
+      dt.className = `work-intro-term ${cssClass}`;
+      dt.textContent = work.name;
+      const dd = document.createElement("dd");
+      dd.className = "work-intro-desc";
+      dd.textContent = work.desc;
+      workIntroList.appendChild(dt);
+      workIntroList.appendChild(dd);
+    };
+
+    if (masterStatus === STATUS_MAP.available) {
+      // 全工事を緑色で表示
+      reformWorks.forEach(w => appendWorkItem(w, 'is_available'));
+    } else if (masterStatus === STATUS_MAP.consult) {
+      // 全工事を黄色で表示
+      reformWorks.forEach(w => appendWorkItem(w, 'is_consult'));
+    } else {
+      // 一部対応：対応可能→要相談の順で表示
+      availableWorks.forEach(w => appendWorkItem(w, 'is_available'));
+      consultWorks.forEach(w => appendWorkItem(w, 'is_consult'));
+    }
+
+    workIntroContent.appendChild(workIntroList);
+    workIntro.appendChild(workIntroContent);
+
+    // トグル動作のイベントリスナー
+    toggleBtn.addEventListener('click', () => {
+      workIntroContent.classList.toggle('show');
+    });
+
+    group.appendChild(workIntro);
+  }
 
   return group;
 }
