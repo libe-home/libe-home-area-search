@@ -102,8 +102,9 @@ const STATUS_MAP = {
  * 返却値: { cssClass: string, label: string }
  */
 function resolveStatus(value) {
-  if (value === "対応可能") return STATUS_MAP.available;
-  if (value === "要相談") return STATUS_MAP.consult;
+  const v = (value ?? '').trim();
+  if (v === "対応可能") return STATUS_MAP.available;
+  if (v === "要相談") return STATUS_MAP.consult;
   return STATUS_MAP.unavailable;
 }
 
