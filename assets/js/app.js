@@ -31,6 +31,7 @@ const elResult = document.getElementById("result");
 const elMuniHint = document.getElementById("muniHint");
 const elLoadingOverlay = document.getElementById("loadingOverlay");
 const elLoadingContent = document.getElementById("loadingContent");
+const elContactBtnArea = document.getElementById("contactBtnArea");
 
 let loadingTimeout = null;
 const BTN_ORIGINAL_HTML = elBtn.innerHTML;
@@ -62,6 +63,7 @@ function setMsg(text, kind) {
 function clearResult() {
   elResult.innerHTML = "";
   elResult.classList.remove("show");
+  if (elContactBtnArea) elContactBtnArea.style.display = "none";
 }
 
 /**
@@ -93,10 +95,8 @@ const STATUS_MAP = {
  * 返却値: { cssClass: string, label: string }
  */
 function resolveStatus(value) {
-  if (!value || value === "" || value === "—" || value === "対応不可") return STATUS_MAP.unavailable;
-  if (value.includes("非対応") || value.includes("対応エリア外")) return STATUS_MAP.unavailable;
-  if (value.includes("要相談")) return STATUS_MAP.consult;
-  if (value === "対応可能" || value === "○" || value === "◯" || value === "対応可") return STATUS_MAP.available;
+  if (value === "対応可能") return STATUS_MAP.available;
+  if (value === "要相談") return STATUS_MAP.consult;
   return STATUS_MAP.unavailable;
 }
 
@@ -108,6 +108,15 @@ function getStatusClass(value) {
 /** 判定値から表示用ラベル（"対応可能" / "要相談" / "対応不可"）を返す。 */
 function getStatusText(value) {
   return resolveStatus(value).label;
+}
+
+/** LINEで問い合わせるテキストリンクを生成する。 */
+function createLineLink() {
+  const link = document.createElement("a");
+  link.href = "https://lin.ee/zGxs8aB";
+  link.className = "result-status-link";
+  link.innerHTML = 'LINEで問い合わせる<svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>';
+  return link;
 }
 
 /**
@@ -487,6 +496,12 @@ function renderKomutenGroup(komutenItems) {
     }
 
     item.appendChild(statusDiv);
+
+    // 対応可能・要相談の場合は「LINEで問い合わせる」テキストリンクを表示
+    if (statusClass === 'available' || statusClass === 'consult') {
+      item.appendChild(createLineLink());
+    }
+
     group.appendChild(item);
   });
 
@@ -696,6 +711,15 @@ function renderMenu(res) {
   }
 
   elResult.classList.add("show", "fade-in");
+
+  // LINEボタン：対応可能・要相談が1つでもあれば表示
+  if (elContactBtnArea) {
+    const hasAny = items.some(it => {
+      const st = resolveStatus(it.value);
+      return st === STATUS_MAP.available || st === STATUS_MAP.consult;
+    });
+    elContactBtnArea.style.display = hasAny ? "" : "none";
+  }
 
   // 結果ヘッダーがスティッキーヘッダー直下に来るようスクロール
   requestAnimationFrame(() => {
