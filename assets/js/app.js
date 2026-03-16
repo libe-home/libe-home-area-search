@@ -39,6 +39,10 @@ if (elContactBtn) elContactBtn.href = CONFIG.LINE_URL;
 let loadingTimeout = null;
 const BTN_ORIGINAL_HTML = elBtn.innerHTML;
 
+// ==================== SVGアイコン定数 ====================
+const ICON_EXTERNAL_LINK = '<svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>';
+const ICON_CHEVRON_DOWN = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9" /></svg>';
+
 // ==================== リフォーム各工事（対応可能工事CSVから動的構築） ====================
 let reformWorks = []; // loadReformWorks() で構築
 let reformWorksReady = false;
@@ -118,7 +122,7 @@ function createLineLink() {
   const link = document.createElement("a");
   link.href = CONFIG.LINE_URL;
   link.className = "result-status-link";
-  link.innerHTML = 'LINEで問い合わせる<svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>';
+  link.innerHTML = `LINEで問い合わせる${ICON_EXTERNAL_LINK}`;
   return link;
 }
 
@@ -649,7 +653,7 @@ function renderReformGroup(reformItems, masterValue) {
     const toggleBtn = document.createElement("button");
     toggleBtn.className = "work-intro-toggle";
     toggleBtn.type = "button";
-    toggleBtn.innerHTML = '<span class="is-open">詳しく見る</span><span class="is-close">閉じる</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9" /></svg>';
+    toggleBtn.innerHTML = `<span class="is-open">詳しく見る</span><span class="is-close">閉じる</span>${ICON_CHEVRON_DOWN}`;
     workIntroHeader.appendChild(toggleBtn);
 
     workIntro.appendChild(workIntroHeader);
