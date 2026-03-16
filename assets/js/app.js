@@ -564,6 +564,38 @@ function renderReformGroup(reformItems, masterValue) {
     .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult');
   const hasAnyWorks = availableWorks.length > 0 || consultWorks.length > 0;
 
+  // 単一ステータスバッジを生成してcontainerに追加するヘルパー
+  const appendStatusBadge = (container, cssClass, text) => {
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "result-status";
+    const badge = document.createElement("span");
+    badge.className = `status-badge ${cssClass}`;
+    badge.textContent = text;
+    statusDiv.appendChild(badge);
+    container.appendChild(statusDiv);
+  };
+
+  // 工事名バッジのグループを生成してcontainerに追加するヘルパー
+  const appendBadgeGroup = (container, works, labelText, badgeClass) => {
+    if (works.length === 0) return;
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "result-status";
+    const label = document.createElement("span");
+    label.className = "result-status-label";
+    label.textContent = labelText;
+    statusDiv.appendChild(label);
+    const ul = document.createElement("ul");
+    ul.className = "status-badge-group";
+    works.forEach(w => {
+      const li = document.createElement("li");
+      li.className = `status-badge ${badgeClass}`;
+      li.textContent = w.name;
+      ul.appendChild(li);
+    });
+    statusDiv.appendChild(ul);
+    container.appendChild(statusDiv);
+  };
+
   // リフォームセクションに「LINEで問い合わせる」を表示するか
   let showReformLineLink = false;
   // 各工事の紹介を表示するか
@@ -571,60 +603,23 @@ function renderReformGroup(reformItems, masterValue) {
 
   if (masterStatus === STATUS_MAP.available) {
     // マスター値「対応可能」→ 「対応可能」バッジ
-    const statusDiv = document.createElement("div");
-    statusDiv.className = "result-status";
-    const badge = document.createElement("span");
-    badge.className = "status-badge available";
-    badge.textContent = "対応可能";
-    statusDiv.appendChild(badge);
-    reformResultItem.appendChild(statusDiv);
+    appendStatusBadge(reformResultItem, "available", "対応可能");
     showReformLineLink = true;
     showWorkIntro = true;
   } else if (masterStatus === STATUS_MAP.consult) {
     // マスター値「要相談」→ 「要相談」バッジ
-    const statusDiv = document.createElement("div");
-    statusDiv.className = "result-status";
-    const badge = document.createElement("span");
-    badge.className = "status-badge consult";
-    badge.textContent = "要相談";
-    statusDiv.appendChild(badge);
-    reformResultItem.appendChild(statusDiv);
+    appendStatusBadge(reformResultItem, "consult", "要相談");
     showReformLineLink = true;
     showWorkIntro = true;
   } else {
     // マスター値「対応不可」→ 個別工事を確認
     if (!hasAnyWorks) {
       // すべて対応不可 → 「対応不可」バッジ、工事紹介なし
-      const statusDiv = document.createElement("div");
-      statusDiv.className = "result-status";
-      const badge = document.createElement("span");
-      badge.className = "status-badge unavailable";
-      badge.textContent = "対応不可";
-      statusDiv.appendChild(badge);
-      reformResultItem.appendChild(statusDiv);
+      appendStatusBadge(reformResultItem, "unavailable", "対応不可");
     } else {
       // 一部工事のみ対応可能 → 対応可能・要相談の工事のみバッジ表示
-      const appendBadgeGroup = (works, labelText, badgeClass) => {
-        if (works.length === 0) return;
-        const statusDiv = document.createElement("div");
-        statusDiv.className = "result-status";
-        const label = document.createElement("span");
-        label.className = "result-status-label";
-        label.textContent = labelText;
-        statusDiv.appendChild(label);
-        const ul = document.createElement("ul");
-        ul.className = "status-badge-group";
-        works.forEach(w => {
-          const li = document.createElement("li");
-          li.className = `status-badge ${badgeClass}`;
-          li.textContent = w.name;
-          ul.appendChild(li);
-        });
-        statusDiv.appendChild(ul);
-        reformResultItem.appendChild(statusDiv);
-      };
-      appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
-      appendBadgeGroup(consultWorks, "要相談工事：", "consult");
+      appendBadgeGroup(reformResultItem, availableWorks, "対応可能工事：", "partial");
+      appendBadgeGroup(reformResultItem, consultWorks, "要相談工事：", "consult");
       showReformLineLink = true;
       showWorkIntro = true;
     }
