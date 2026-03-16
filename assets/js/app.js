@@ -2,6 +2,7 @@
 const CONFIG = {
   CSV_URL: window.__csvUrl,
   REFORM_WORKS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1088443442&single=true&output=csv',
+  LINE_URL: 'https://lin.ee/zGxs8aB',
   KOMUTEN_CATEGORIES: ['注文住宅', 'リノベーション', 'オフィス・店舗'],  // 工務店グループの表示対象列
   HEADER_ROW: 3,        // 3行目にサービス名（注文住宅・リノベーション・リフォーム_各工事...）
   DATA_START_ROW: 4,    // 4行目からデータ開始
@@ -32,6 +33,8 @@ const elMuniHint = document.getElementById("muniHint");
 const elLoadingOverlay = document.getElementById("loadingOverlay");
 const elLoadingContent = document.getElementById("loadingContent");
 const elContactBtnArea = document.getElementById("contactBtnArea");
+const elContactBtn = document.getElementById("contactBtn");
+if (elContactBtn) elContactBtn.href = CONFIG.LINE_URL;
 
 let loadingTimeout = null;
 const BTN_ORIGINAL_HTML = elBtn.innerHTML;
@@ -113,7 +116,7 @@ function getStatusText(value) {
 /** LINEで問い合わせるテキストリンクを生成する。 */
 function createLineLink() {
   const link = document.createElement("a");
-  link.href = "https://lin.ee/zGxs8aB";
+  link.href = CONFIG.LINE_URL;
   link.className = "result-status-link";
   link.innerHTML = 'LINEで問い合わせる<svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>';
   return link;
