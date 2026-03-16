@@ -649,6 +649,7 @@ function renderReformGroup(reformItems, masterValue) {
     const toggleBtn = document.createElement("button");
     toggleBtn.className = "work-intro-toggle";
     toggleBtn.type = "button";
+    toggleBtn.setAttribute('aria-expanded', 'false');
     toggleBtn.innerHTML = `<span class="is-open">詳しく見る</span><span class="is-close">閉じる</span>${ICON_CHEVRON_DOWN}`;
     workIntroHeader.appendChild(toggleBtn);
 
@@ -690,7 +691,8 @@ function renderReformGroup(reformItems, masterValue) {
 
     // トグル動作のイベントリスナー
     toggleBtn.addEventListener('click', () => {
-      workIntroContent.classList.toggle('show');
+      const isOpen = workIntroContent.classList.toggle('show');
+      toggleBtn.setAttribute('aria-expanded', isOpen);
     });
 
     group.appendChild(workIntro);
