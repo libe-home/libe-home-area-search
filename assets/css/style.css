@@ -102,6 +102,10 @@ main {
     font-size: calc(14 / 16 * 1rem);
   }
 
+  .h1 a {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+
   .h1 {
     line-height: 1;
 
@@ -127,6 +131,7 @@ main {
   color: var(--color-text);
   font-weight: 400;
   text-decoration: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
 .main-title-area {
@@ -290,6 +295,7 @@ select:disabled {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   transition: background 0.2s, transform 0.1s;
   margin-inline: auto;
   position: relative;
@@ -522,6 +528,7 @@ select:disabled {
   color: var(--color-accent);
   font-size: calc(14 / 16 * 1rem);
   font-weight: 500;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   margin-top: 16px;
 }
 
@@ -591,6 +598,7 @@ select:disabled {
   border-radius: 2px;
   padding: 2px 12px;
   color: inherit;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   border: none;
   cursor: pointer;
   margin-top: 6px;
@@ -672,6 +680,7 @@ select:disabled {
   padding: 10px 20px;
   border-radius: 5px;
   text-decoration: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
 /* フッター */
