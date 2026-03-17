@@ -597,7 +597,7 @@ select:disabled {
   background-color: var(--color-base);
   border-radius: 2px;
   padding: 2px 12px;
-  color: inherit;
+  color: var(--color-text);
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   border: none;
   cursor: pointer;
