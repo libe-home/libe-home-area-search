@@ -2,6 +2,7 @@
 const CONFIG = {
   CSV_URL: window.__csvUrl,
   REFORM_WORKS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1088443442&single=true&output=csv',
+  LINE_URL: 'https://lin.ee/zGxs8aB',
   KOMUTEN_CATEGORIES: ['注文住宅', 'リノベーション', 'オフィス・店舗'],  // 工務店グループの表示対象列
   HEADER_ROW: 3,        // 3行目にサービス名（注文住宅・リノベーション・リフォーム_各工事...）
   DATA_START_ROW: 4,    // 4行目からデータ開始
@@ -31,9 +32,20 @@ const elResult = document.getElementById("result");
 const elMuniHint = document.getElementById("muniHint");
 const elLoadingOverlay = document.getElementById("loadingOverlay");
 const elLoadingContent = document.getElementById("loadingContent");
+const elContactBtnArea = document.getElementById("contactBtnArea");
+const elContactBtn = document.getElementById("contactBtn");
+if (elContactBtn) {
+  elContactBtn.href = CONFIG.LINE_URL;
+  elContactBtn.target = "_blank";
+  elContactBtn.rel = "noopener noreferrer";
+}
 
 let loadingTimeout = null;
 const BTN_ORIGINAL_HTML = elBtn.innerHTML;
+
+// ==================== SVGアイコン定数 ====================
+const ICON_EXTERNAL_LINK = '<svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>';
+const ICON_CHEVRON_DOWN = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9" /></svg>';
 
 // ==================== リフォーム各工事（対応可能工事CSVから動的構築） ====================
 let reformWorks = []; // loadReformWorks() で構築
@@ -62,6 +74,7 @@ function setMsg(text, kind) {
 function clearResult() {
   elResult.innerHTML = "";
   elResult.classList.remove("show");
+  if (elContactBtnArea) elContactBtnArea.style.display = "none";
 }
 
 /**
@@ -93,10 +106,9 @@ const STATUS_MAP = {
  * 返却値: { cssClass: string, label: string }
  */
 function resolveStatus(value) {
-  if (!value || value === "" || value === "—" || value === "対応不可") return STATUS_MAP.unavailable;
-  if (value.includes("非対応") || value.includes("対応エリア外")) return STATUS_MAP.unavailable;
-  if (value.includes("要相談")) return STATUS_MAP.consult;
-  if (value === "対応可能" || value === "○" || value === "◯" || value === "対応可") return STATUS_MAP.available;
+  const v = (value ?? '').trim();
+  if (v === "対応可能") return STATUS_MAP.available;
+  if (v === "要相談") return STATUS_MAP.consult;
   return STATUS_MAP.unavailable;
 }
 
@@ -108,6 +120,17 @@ function getStatusClass(value) {
 /** 判定値から表示用ラベル（"対応可能" / "要相談" / "対応不可"）を返す。 */
 function getStatusText(value) {
   return resolveStatus(value).label;
+}
+
+/** LINEで問い合わせるテキストリンクを生成する。 */
+function createLineLink() {
+  const link = document.createElement("a");
+  link.href = CONFIG.LINE_URL;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.className = "result-status-link";
+  link.innerHTML = `LINEで問い合わせる${ICON_EXTERNAL_LINK}`;
+  return link;
 }
 
 /**
@@ -487,6 +510,12 @@ function renderKomutenGroup(komutenItems) {
     }
 
     item.appendChild(statusDiv);
+
+    // 対応可能・要相談の場合は「LINEで問い合わせる」テキストリンクを表示
+    if (statusClass === 'available' || statusClass === 'consult') {
+      item.appendChild(createLineLink());
+    }
+
     group.appendChild(item);
   });
 
@@ -534,101 +563,146 @@ function renderReformGroup(reformItems, masterValue) {
   reformServiceTitle.textContent = "リフォーム";
   reformResultItem.appendChild(reformServiceTitle);
 
-  if (masterStatus === STATUS_MAP.available) {
-    // マスター値「対応可能」→ 「全工事対応可能」バッジ1つのみ
-    const statusDiv = document.createElement("div");
-    statusDiv.className = "result-status";
-    const badge = document.createElement("span");
-    badge.className = "status-badge available";
-    badge.textContent = "全工事対応可能";
-    statusDiv.appendChild(badge);
-    reformResultItem.appendChild(statusDiv);
-  } else if (masterStatus === STATUS_MAP.consult) {
-    // マスター値「要相談」→ 「要相談」バッジ1つのみ
-    const statusDiv = document.createElement("div");
-    statusDiv.className = "result-status";
-    const badge = document.createElement("span");
-    badge.className = "status-badge consult";
-    badge.textContent = "要相談";
-    statusDiv.appendChild(badge);
-    reformResultItem.appendChild(statusDiv);
-  } else {
-    // マスター値「対応不可」→ 個別工事を一覧表示（従来の動作）
-    const availableWorks = reformWorks
-      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available')
-      .map(work => work.name);
-    const consultWorks = reformWorks
-      .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult')
-      .map(work => work.name);
+  // 個別工事の対応状況を集計
+  const availableWorks = reformWorks
+    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'available');
+  const consultWorks = reformWorks
+    .filter(work => getStatusClass(reformMap.get(work.colKey) ?? '') === 'consult');
+  const hasAnyWorks = availableWorks.length > 0 || consultWorks.length > 0;
 
-    if (availableWorks.length === 0 && consultWorks.length === 0) {
-      const statusDiv = document.createElement("div");
-      statusDiv.className = "result-status";
-      const badge = document.createElement("span");
-      badge.className = "status-badge unavailable";
-      badge.textContent = "対応不可";
-      statusDiv.appendChild(badge);
-      reformResultItem.appendChild(statusDiv);
+  // 単一ステータスバッジを生成してcontainerに追加するヘルパー
+  const appendStatusBadge = (container, cssClass, text) => {
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "result-status";
+    const badge = document.createElement("span");
+    badge.className = `status-badge ${cssClass}`;
+    badge.textContent = text;
+    statusDiv.appendChild(badge);
+    container.appendChild(statusDiv);
+  };
+
+  // 工事名バッジのグループを生成してcontainerに追加するヘルパー
+  const appendBadgeGroup = (container, works, labelText, badgeClass) => {
+    if (works.length === 0) return;
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "result-status";
+    const label = document.createElement("span");
+    label.className = "result-status-label";
+    label.textContent = labelText;
+    statusDiv.appendChild(label);
+    const ul = document.createElement("ul");
+    ul.className = "status-badge-group";
+    works.forEach(w => {
+      const li = document.createElement("li");
+      li.className = `status-badge ${badgeClass}`;
+      li.textContent = w.name;
+      ul.appendChild(li);
+    });
+    statusDiv.appendChild(ul);
+    container.appendChild(statusDiv);
+  };
+
+  // リフォームセクションに「LINEで問い合わせる」を表示するか
+  let showReformLineLink = false;
+  // 各工事の紹介を表示するか
+  let showWorkIntro = false;
+
+  if (masterStatus === STATUS_MAP.available) {
+    // マスター値「対応可能」→ 「対応可能」バッジ
+    appendStatusBadge(reformResultItem, "available", "対応可能");
+    showReformLineLink = true;
+    showWorkIntro = true;
+  } else if (masterStatus === STATUS_MAP.consult) {
+    // マスター値「要相談」→ 「要相談」バッジ
+    appendStatusBadge(reformResultItem, "consult", "要相談");
+    showReformLineLink = true;
+    showWorkIntro = true;
+  } else {
+    // マスター値「対応不可」→ 個別工事を確認
+    if (!hasAnyWorks) {
+      // すべて対応不可 → 「対応不可」バッジ、工事紹介なし
+      appendStatusBadge(reformResultItem, "unavailable", "対応不可");
     } else {
-      // バッジリスト生成ヘルパー
-      const appendBadgeGroup = (works, labelText, badgeClass) => {
-        if (works.length === 0) return;
-        const statusDiv = document.createElement("div");
-        statusDiv.className = "result-status";
-        const label = document.createElement("span");
-        label.className = "result-status-label";
-        label.textContent = labelText;
-        statusDiv.appendChild(label);
-        const ul = document.createElement("ul");
-        ul.className = "status-badge-group";
-        works.forEach(w => {
-          const li = document.createElement("li");
-          li.className = `status-badge ${badgeClass}`;
-          li.textContent = w;
-          ul.appendChild(li);
-        });
-        statusDiv.appendChild(ul);
-        reformResultItem.appendChild(statusDiv);
-      };
-      appendBadgeGroup(availableWorks, "対応可能工事：", "partial");
-      appendBadgeGroup(consultWorks, "要相談工事：", "consult");
+      // 一部工事のみ対応可能 → 対応可能・要相談の工事のみバッジ表示
+      appendBadgeGroup(reformResultItem, availableWorks, "対応可能工事：", "partial");
+      appendBadgeGroup(reformResultItem, consultWorks, "要相談工事：", "consult");
+      showReformLineLink = true;
+      showWorkIntro = true;
     }
   }
+
+  // LINEで問い合わせるテキストリンク
+  if (showReformLineLink) {
+    reformResultItem.appendChild(createLineLink());
+  }
+
   group.appendChild(reformResultItem);
 
-  // リフォーム各工事の紹介（動的 is_available 付与）
-  const workIntro = document.createElement("section");
-  workIntro.className = "work-intro";
+  // リフォーム各工事の紹介（アコーディオン）
+  if (showWorkIntro) {
+    const workIntro = document.createElement("section");
+    workIntro.className = "work-intro";
 
-  const workIntroTitle = document.createElement("h3");
-  workIntroTitle.className = "work-intro-title";
-  workIntroTitle.textContent = "リフォーム各工事の紹介";
-  workIntro.appendChild(workIntroTitle);
+    // ヘッダー（タイトル + トグルボタン）
+    const workIntroHeader = document.createElement("div");
+    workIntroHeader.className = "work-intro-header";
 
-  const workIntroList = document.createElement("dl");
-  workIntroList.className = "work-intro-list";
+    const workIntroTitle = document.createElement("h3");
+    workIntroTitle.className = "work-intro-title";
+    workIntroTitle.textContent = "リフォーム各工事の紹介";
+    workIntroHeader.appendChild(workIntroTitle);
 
-  reformWorks.forEach(work => {
-    const workValue = reformMap.get(work.colKey) ?? "";
-    const workStatus  = getStatusClass(workValue);
-    const isUnavailableMaster = masterStatus === STATUS_MAP.unavailable;
-    const isAvailable = isUnavailableMaster && workStatus === 'available';
-    const isConsult   = isUnavailableMaster && workStatus === 'consult';
+    const toggleBtn = document.createElement("button");
+    toggleBtn.className = "work-intro-toggle";
+    toggleBtn.type = "button";
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    toggleBtn.innerHTML = `<span class="is-open">詳しく見る</span><span class="is-close">閉じる</span>${ICON_CHEVRON_DOWN}`;
+    workIntroHeader.appendChild(toggleBtn);
 
-    const dt = document.createElement("dt");
-    dt.className = `work-intro-term${isAvailable ? ' is_available' : isConsult ? ' is_consult' : ''}`;
-    dt.textContent = work.name;
+    workIntro.appendChild(workIntroHeader);
 
-    const dd = document.createElement("dd");
-    dd.className = "work-intro-desc";
-    dd.textContent = work.desc;
+    // コンテンツ（初期状態は閉じている）
+    const workIntroContent = document.createElement("div");
+    workIntroContent.className = "work-intro-content";
 
-    workIntroList.appendChild(dt);
-    workIntroList.appendChild(dd);
-  });
+    const workIntroList = document.createElement("dl");
+    workIntroList.className = "work-intro-list";
 
-  workIntro.appendChild(workIntroList);
-  group.appendChild(workIntro);
+    // 工事紹介リストへの追加ヘルパー
+    const appendWorkItem = (work, cssClass) => {
+      const dt = document.createElement("dt");
+      dt.className = `work-intro-term ${cssClass}`;
+      dt.textContent = work.name;
+      const dd = document.createElement("dd");
+      dd.className = "work-intro-desc";
+      dd.textContent = work.desc;
+      workIntroList.appendChild(dt);
+      workIntroList.appendChild(dd);
+    };
+
+    if (masterStatus === STATUS_MAP.available) {
+      // 全工事を緑色で表示
+      reformWorks.forEach(w => appendWorkItem(w, 'is_available'));
+    } else if (masterStatus === STATUS_MAP.consult) {
+      // 全工事を黄色で表示
+      reformWorks.forEach(w => appendWorkItem(w, 'is_consult'));
+    } else {
+      // 一部対応：対応可能→要相談の順で表示
+      availableWorks.forEach(w => appendWorkItem(w, 'is_available'));
+      consultWorks.forEach(w => appendWorkItem(w, 'is_consult'));
+    }
+
+    workIntroContent.appendChild(workIntroList);
+    workIntro.appendChild(workIntroContent);
+
+    // トグル動作のイベントリスナー
+    toggleBtn.addEventListener('click', () => {
+      const isOpen = workIntroContent.classList.toggle('show');
+      toggleBtn.setAttribute('aria-expanded', isOpen);
+    });
+
+    group.appendChild(workIntro);
+  }
 
   return group;
 }
@@ -696,6 +770,15 @@ function renderMenu(res) {
   }
 
   elResult.classList.add("show", "fade-in");
+
+  // LINEボタン：対応可能・要相談が1つでもあれば表示
+  if (elContactBtnArea) {
+    const hasAny = items.some(it => {
+      const st = resolveStatus(it.value);
+      return st === STATUS_MAP.available || st === STATUS_MAP.consult;
+    });
+    elContactBtnArea.style.display = hasAny ? "" : "none";
+  }
 
   // 結果ヘッダーがスティッキーヘッダー直下に来るようスクロール
   requestAnimationFrame(() => {

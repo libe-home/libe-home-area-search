@@ -1,172 +1,84 @@
-# libe-home-area-search
-## エリア検索ツール用
+# リベ大工務店｜対応エリア検索
 
-GoogleスプレッドシートからCSVデータを読み込み、都道府県・市区町村を選択してサービス対応状況を表示する静的Webアプリケーションです。
+お住まいの地域でリベ大工務店のサービス（注文住宅・リノベーション・リフォーム）に対応しているかを検索できる静的 Web アプリケーションです。
+
+## URL
+
+https://area.libe-home.com/
 
 ## 特徴
 
-- **GASバナーなし**：静的HTML + CSV公開方式でGoogle Apps Scriptのバナーを回避
-- **シンプルな運用**：Googleスプレッドシートを更新するだけでデータが反映
-- **モバイル対応**：レスポンシブデザインでスマホ・タブレット・PCに対応
-- **高速検索**：約1,900件のデータをブラウザ内で高速検索
-- **サジェスト機能**：ひらがな入力で市区町村を絞り込み
-
-## デモ
-
-**GitHub Pages URL:**
-https://itohenthunagi.github.io/libe-home-area/
+- **ビルド不要** — HTML / CSS / JavaScript のみで構成。フレームワークやビルドツールに依存しません
+- **Google スプレッドシート連携** — スプレッドシートを更新するだけでデータが自動反映
+- **高速検索** — 約 1,900 件の市区町村データをブラウザ内で即時検索
+- **モバイル対応** — レスポンシブデザインでスマートフォン・タブレット・PC に対応
+- **オフラインキャッシュ** — localStorage を活用し、2 回目以降の表示を高速化
+- **アクセシビリティ** — セマンティック HTML、`aria-expanded` 属性などに対応
 
 ## 技術スタック
 
-- HTML5/CSS3/JavaScript (Vanilla)
-- [PapaParse](https://www.papaparse.com/) - CSV解析ライブラリ
-- [Google Fonts](https://fonts.google.com/) - Noto Sans JP
-- GitHub Pages - 静的ホスティング
+| カテゴリ | 技術 |
+|---------|------|
+| マークアップ / スタイル | HTML5 / CSS3（CSS カスタムプロパティ使用） |
+| スクリプト | Vanilla JavaScript（ES2017+） |
+| CSV 解析 | [PapaParse 5.4.1](https://www.papaparse.com/)（CDN + SRI） |
+| フォント | [Google Fonts](https://fonts.google.com/)（Zen Kaku Gothic New / Zen Old Mincho） |
+| ホスティング | GitHub Pages |
 
 ## ファイル構成
 
 ```
-libe_koumu_area/
-├── index.html      # メインアプリケーション
-└── README.md       # このファイル
+libe-home-area-search/
+├── index.html              # エントリーポイント
+├── assets/
+│   ├── css/
+│   │   └── style.css       # スタイルシート
+│   ├── js/
+│   │   └── app.js          # アプリケーションロジック
+│   └── images/
+│       ├── favicon.png
+│       ├── logo.png         # ヘッダーロゴ
+│       ├── logo_icon.svg    # アイコンロゴ
+│       ├── logo_rehome.svg  # リベ大リフォームロゴ
+│       └── ogp.png          # OGP 画像
+└── README.md
 ```
 
-## セットアップ
+## ローカルでの開発
 
-### 1. Googleスプレッドシートの準備
-
-#### 公開用シート「公開_まとめ」を作成
-
-データ構造：
-
-```
-行番号 | A列(都道府県) | B列(市区町村) | C列(ふりがな) | D列以降(判定セル)
--------|--------------|--------------|--------------|------------------
-2      | (空白)       | (空白)       | (空白)       | プロバイダー種別
-3      | (空白)       | (空白)       | (空白)       | カテゴリ
-4以降  | 都道府県名    | 市区町村名    | ふりがな      | 判定値
-```
-
-#### CSV公開URLの取得
-
-1. Googleスプレッドシートを開く
-2. ファイル → 共有 → ウェブに公開
-3. 「公開_まとめ」シート + CSV形式を選択
-4. URLをコピー
-
-### 2. HTMLファイルの設定
-
-`index.html` の `CONFIG` オブジェクトを編集：
-
-```javascript
-const CONFIG = {
-  CSV_URL: 'YOUR_CSV_PUBLIC_URL',
-  CONTACT_URL: 'YOUR_CONTACT_URL',
-  // ...
-};
-```
-
-### 3. GitHubリポジトリにアップロード
+ビルドステップは不要です。任意の静的ファイルサーバーで `index.html` を配信してください。
 
 ```bash
-# リポジトリをクローン
-git clone https://github.com/itohenthunagi/libe-home-area.git
-cd libe-home-area
+# 例: Python の簡易サーバー
+python3 -m http.server 8000
 
-# ファイルを編集後、コミット＆プッシュ
-git add index.html
-git commit -m "Update configuration"
-git push origin main
+# 例: Node.js (npx)
+npx serve .
 ```
 
-### 4. GitHub Pages設定
+ブラウザで `http://localhost:8000` を開くとアプリケーションが表示されます。
 
-1. GitHubリポジトリページを開く
-2. Settings → Pages
-3. Source: Deploy from a branch
-4. Branch: main / root
-5. Save
+## データソース
 
-数分後、以下のURLで公開されます：
-```
-https://itohenthunagi.github.io/libe-home-area/
-```
+サービス対応状況のデータは Google スプレッドシートから CSV 形式で取得しています。スプレッドシート上のデータを更新すると、数分後に Web サイトへ反映されます。
 
-## 使い方
+### データ構造
 
-### ユーザー向け
+| 列 | 内容 |
+|----|------|
+| A | 都道府県 |
+| B | 市区町村 |
+| C | ふりがな |
+| D 列以降 | 各サービスの対応状況（判定値） |
 
-1. 都道府県をプルダウンから選択
-2. 市区町村をひらがなで入力（候補が表示されます）
-3. 候補から市区町村を選択
-4. 「確認する」ボタンをクリック
-5. 対応状況が一覧表示されます
+### 判定値と表示
 
-### データ更新方法
-
-1. Googleスプレッドシートの「まとめ」シートを編集
-2. 「公開_まとめ」シートに自動転記される
-3. 数分待つ（Google側のキャッシュ更新）
-4. Webサイトをリロード（Ctrl+F5でキャッシュクリア）
-
-## 設定項目
-
-### CONFIG オブジェクト
-
-| 項目 | 説明 | デフォルト値 |
-|------|------|-------------|
-| CSV_URL | 公開CSV URL | (要設定) |
-| CONTACT_URL | お問い合わせURL | (要設定) |
-| HEADER_PROVIDER_ROW | プロバイダー種別行 | 2 |
-| HEADER_CATEGORY_ROW | カテゴリ行 | 3 |
-| DATA_START_ROW | データ開始行 | 4 |
-| FIRST_JUDGE_COL | 判定値開始列 | 4 (D列) |
-| SUGGEST_LIMIT | サジェスト上限 | 30 |
-
-### カテゴリ名変換
-
-`categoryNameMap` で表示名をカスタマイズできます：
-
-```javascript
-const categoryNameMap = {
-  "大規模": "大規模リフォーム",
-  "小規模": "小規模リフォーム"
-};
-```
-
-## 判定値の表示ルール
-
-| 判定値 | 表示 | スタイル |
-|--------|------|---------|
-| ○ | 対応可能 | available (緑) |
-| 要相談 | 要相談 | consult (オレンジ) |
-| 一部 / 除く | (そのまま) | partial (青緑) |
-| 空欄 / — | 対応エリア外 | unavailable (グレー) |
-
-## トラブルシューティング
-
-### データが表示されない
-
-- CSVのURL が正しいか確認
-- ブラウザのコンソールでエラーを確認
-- CSV公開設定が有効か確認
-
-### 候補が表示されない
-
-- 都道府県を選択しているか確認
-- ひらがなで入力しているか確認
-- データに該当市区町村が存在するか確認
-
-### 更新が反映されない
-
-- ブラウザキャッシュをクリア（Ctrl+F5）
-- Google側のキャッシュ更新を待つ（数分）
-- CSV URLが正しいか再確認
+| 判定値 | 表示テキスト | スタイル |
+|--------|-------------|---------|
+| `対応可能` | 対応可能 | 緑 |
+| `要相談` | 要相談 | オレンジ |
+| 上記以外 / 空欄 | 対応不可 | グレー |
 
 ## ライセンス
 
 MIT License
-
-## お問い合わせ
-
-ご不明な点は[お問い合わせフォーム](https://docs.google.com/forms/d/e/1FAIpQLSeqtoxMGXGZEHZ9x2QbNUdb7g--Fb-yoxjU5VKbuMT5TmJIvw/viewform)までご連絡ください。

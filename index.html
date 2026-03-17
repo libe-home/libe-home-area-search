@@ -9,6 +9,8 @@
   <meta name="description" content="リベ大工務店の対応エリア検索ページです。お住まいの地域で注文住宅・リフォーム・リノベーションに対応しているかを簡単に確認できます。" />
   <link rel="icon" type="image/png" href="assets/images/favicon.png" />
   <meta property="og:title" content="リベ大工務店｜対応エリア検索｜注文住宅・リフォーム・リノベーション" />
+  <meta property="og:description" content="リベ大工務店の対応エリア検索ページです。お住まいの地域で注文住宅・リフォーム・リノベーションに対応しているかを簡単に確認できます。" />
+  <meta property="og:url" content="https://area.libe-home.com/" />
   <meta property="og:image" content="https://area.libe-home.com/assets/images/ogp.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -151,141 +153,10 @@
         <!-- 結果表示 -->
         <section id="result" class="result-section"></section>
 
-        <!-- 結果表示（静的）：実装時は非表示 -->
-        <section class="result-section fade-in">
-          <h2 class="result-header">
-            <span class="result-header-title">〇〇県〇〇市</span>
-            <span class="result-header-sub">の対応状況</span>
-          </h2>
-          <div class="result-legend">
-            <div class="result-legend-item">
-              <span class="legend-badge available">対応可能</span>
-              <span class="legend-desc">通常対応しているエリアです</span>
-            </div>
-            <div class="result-legend-item">
-              <span class="legend-badge consult">要相談</span>
-              <span class="legend-desc">内容や地域条件により対応可否を確認します</span>
-            </div>
-            <div class="result-legend-item">
-              <span class="legend-badge unavailable">対応不可</span>
-              <span class="legend-desc">現在は対応対象外のエリアです</span>
-            </div>
-          </div>
-
-          <!-- 工務店の結果 -->
-          <div class="result-item-group">
-            <h3 class="result-title"><img src="assets/images/logo.png" alt="リベ大工務店" width="127" height="24"></h3>
-            <div class="result-item">
-              <h4 class="result-service">注文住宅</h4>
-              <div class="result-status">
-                <span class="status-badge available">対応可能</span>
-              </div>
-              <!-- sys：対応可能・要相談の場合は「LINEで問い合わせる」を表示 -->
-              <a href="https://lin.ee/zGxs8aB" class="result-status-link">LINEで問い合わせる<svg class="external-link-icon"
-                  xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                  aria-hidden="true" focusable="false">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg></a>
-            </div>
-            <div class="result-item">
-              <h4 class="result-service">リノベーション</h4>
-              <div class="result-status">
-                <span class="status-badge consult">要相談</span>
-              </div>
-              <!-- sys：対応可能・要相談の場合は「LINEで問い合わせる」を表示 -->
-              <a href="https://lin.ee/zGxs8aB" class="result-status-link">LINEで問い合わせる<svg class="external-link-icon"
-                  xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                  aria-hidden="true" focusable="false">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg></a>
-            </div>
-            <div class="result-item">
-              <h4 class="result-service">オフィス・店舗（新築・リノベーション）</h4>
-              <div class="result-status">
-                <span class="status-badge unavailable">対応不可</span>
-                <p class="result-status-note">※オフィス・店舗のリフォームをご希望の方は「リベ大リフォーム」をご確認ください。</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- リベ大リフォームの結果 -->
-          <div class="result-item-group">
-            <h3 class="result-title"><img src="assets/images/logo_rehome.svg" alt="リベ大リフォーム" width="132" height="24">
-            </h3>
-            <div class="result-item">
-              <h4 class="result-service">リフォーム</h4>
-              <div class="result-status">
-                <span class="result-status-label">対応可能工事：</span>
-                <ul class="status-badge-group">
-                  <li class="status-badge partial">大工工事</li>
-                  <li class="status-badge partial">建具（木製）工事</li>
-                  <li class="status-badge partial">設備工事</li>
-                  <li class="status-badge consult">塗装工事</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- リフォーム各工事の紹介 -->
-          <section class="work-intro">
-            <div class="work-intro-header">
-              <h3 class="work-intro-title">リフォーム各工事の紹介</h3>
-              <button class="work-intro-toggle js-work-intro-toggle" type="button">
-                <span class="is-open">詳しく見る</span><span class="is-close">閉じる</span><svg
-                  xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                  aria-hidden="true" focusable="false">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
-            </div>
-            <div class="work-intro-content js-work-intro-content">
-              <dl class="work-intro-list">
-                <!-- sys：リフォームの対応可能工事の項目には「is_available」classを付与してください -->
-                <dt class="work-intro-term is_available">大工工事</dt>
-                <dd class="work-intro-desc">内装工事、断熱工事、壁の設置・撤去、畳からフローリングへの変更、室内のバリアフリー化、収納棚・スペースの追加、造作家具工事など</dd>
-
-                <dt class="work-intro-term is_available">建具（木製）工事</dt>
-                <dd class="work-intro-desc">建具の交換・調整、造作建具など</dd>
-
-                <dt class="work-intro-term is_available">設備工事</dt>
-                <dd class="work-intro-desc">キッチン・浴室・洗面台・トイレといった水回り設備の交換、給排水工事、水栓（蛇口）の交換、エコキュートの交換、IHクッキングヒーター交換など</dd>
-
-                <dt class="work-intro-term is_consult">塗装工事</dt>
-                <dd class="work-intro-desc">外壁塗装、屋根塗装、コーキング打ち替え、内壁の塗り替えなど</dd>
-              </dl>
-            </div>
-          </section>
-        </section>
-        <style>
-          .card:has(#result.show) .result-section {
-            display: block !important;
-          }
-        </style>
-        <!-- /結果表示（静的）：実装時は非表示 -->
-        <script>
-          document.addEventListener('DOMContentLoaded', () => {
-            const toggle = document.querySelector('.js-work-intro-toggle');
-            const content = document.querySelector('.js-work-intro-content');
-            if (toggle && content) {
-              // 初期状態：閉じておきたければ show を外す
-              content.classList.remove('show');
-              toggle.addEventListener('click', () => {
-                content.classList.toggle('show');
-              });
-            }
-          });
-        </script>
       </div>
 
-      <div class="contact-btn-area">
-        <a href="https://lin.ee/zGxs8aB" class="contact-btn">LINEで問い合わせる<svg class="external-link-icon"
+      <div id="contactBtnArea" class="contact-btn-area" style="display:none;">
+        <a id="contactBtn" href="#" class="contact-btn">LINEで問い合わせる<svg class="external-link-icon"
             xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
             focusable="false">
