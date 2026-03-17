@@ -34,7 +34,11 @@ const elLoadingOverlay = document.getElementById("loadingOverlay");
 const elLoadingContent = document.getElementById("loadingContent");
 const elContactBtnArea = document.getElementById("contactBtnArea");
 const elContactBtn = document.getElementById("contactBtn");
-if (elContactBtn) elContactBtn.href = CONFIG.LINE_URL;
+if (elContactBtn) {
+  elContactBtn.href = CONFIG.LINE_URL;
+  elContactBtn.target = "_blank";
+  elContactBtn.rel = "noopener noreferrer";
+}
 
 let loadingTimeout = null;
 const BTN_ORIGINAL_HTML = elBtn.innerHTML;
@@ -122,6 +126,8 @@ function getStatusText(value) {
 function createLineLink() {
   const link = document.createElement("a");
   link.href = CONFIG.LINE_URL;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
   link.className = "result-status-link";
   link.innerHTML = `LINEで問い合わせる${ICON_EXTERNAL_LINK}`;
   return link;
