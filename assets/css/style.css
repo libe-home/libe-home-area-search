@@ -552,6 +552,8 @@ select:disabled {
   margin-top: 16px;
 
   .work-intro-toggle {
+    color: var(--color-text);
+
     .is-close {
       display: none;
     }
@@ -597,7 +599,6 @@ select:disabled {
   background-color: var(--color-base);
   border-radius: 2px;
   padding: 2px 12px;
-  color: var(--color-text);
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   border: none;
   cursor: pointer;
