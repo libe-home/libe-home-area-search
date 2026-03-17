@@ -590,6 +590,7 @@ select:disabled {
   background-color: var(--color-base);
   border-radius: 2px;
   padding: 2px 12px;
+  color: inherit;
   border: none;
   cursor: pointer;
   margin-top: 6px;
