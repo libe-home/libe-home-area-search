@@ -1,7 +1,9 @@
 // ==================== 設定 ====================
 const CONFIG = {
-  AREA_DATA_URL: window.__areaDataUrl || 'data/area.json',
-  REFORM_WORKS_URL: window.__reformWorksUrl || 'data/reform-works.json',
+  // index.html の inline で window.__areaDataUrl 等が設定されている前提。
+  // fallback の URL にも同じ ?v= を付けて、index.html とのキャッシュ整合性を保つ。
+  AREA_DATA_URL: window.__areaDataUrl || 'data/area.json?v=20260624',
+  REFORM_WORKS_URL: window.__reformWorksUrl || 'data/reform-works.json?v=20260624',
   LINE_URL: 'https://lin.ee/zGxs8aB',
   KOMUTEN_CATEGORIES: ['注文住宅', 'リノベーション', 'オフィス・店舗'],  // 工務店グループの表示対象列
   FETCH_TIMEOUT_MS: 5000,  // 同一オリジン配信なので短めで十分
@@ -189,7 +191,8 @@ function showLoadingError() {
 const CACHE_KEY_AREA = 'libe_area_data_v2';
 const CACHE_KEY_REFORM = 'libe_area_reform_v2';
 // data/*.json と一致させる。スキーマ変更時に値を上げると古いcacheを自動破棄できる。
-const EXPECTED_SCHEMA_VERSION = 1;
+// v2: kana 削除、末尾の未表示カテゴリ列カット、値の整数エンコード（valueMap 参照）
+const EXPECTED_SCHEMA_VERSION = 2;
 
 function loadJsonFromCache(key) {
   try {
@@ -217,6 +220,9 @@ function saveJsonToCache(key, obj) {
   }
 }
 
+// schemaVersion=2 で固定の valueMap。data 側のズレを早期検出するため厳密一致で検証する。
+const EXPECTED_VALUE_MAP = ['', '対応可能', '要相談', '対応不可'];
+
 /** area.json の構造を最低限チェック。NG ならエラーを throw。 */
 function validateAreaJson(data) {
   if (!data || typeof data !== 'object') throw new Error('area: not an object');
@@ -225,6 +231,10 @@ function validateAreaJson(data) {
   }
   if (!Array.isArray(data.categories) || data.categories.length === 0) {
     throw new Error('area: categories missing or empty');
+  }
+  if (!Array.isArray(data.valueMap) || data.valueMap.length !== EXPECTED_VALUE_MAP.length
+      || data.valueMap.some((v, i) => v !== EXPECTED_VALUE_MAP[i])) {
+    throw new Error('area: valueMap mismatch');
   }
   if (!data.byPref || typeof data.byPref !== 'object' || Object.keys(data.byPref).length === 0) {
     throw new Error('area: byPref missing or empty');
@@ -274,20 +284,26 @@ async function fetchJsonWithTimeout(url, preStarted) {
 }
 
 /**
- * area.json の構造をクライアント側の在りし日の形に展開して適用する。
+ * area.json の構造をクライアント内部表現に展開する。
+ * values は valueMap 経由で整数→文字列へ復号する（schemaVersion=2 の圧縮対応）。
  */
 function applyAreaData(json) {
   appData.categories = (json.categories || []).map(c => (c ?? '').toString());
+  const valueMap = Array.isArray(json.valueMap)
+    ? json.valueMap.map(v => (v ?? '').toString())
+    : [];
   appData.rowsByPref = new Map();
   const byPref = json.byPref || {};
   for (const pref of Object.keys(byPref)) {
     const entries = byPref[pref];
     if (!Array.isArray(entries)) continue;
-    const normalized = entries.map(e => ({
-      muni: (e.muni ?? '').toString(),
-      kana: (e.kana ?? '').toString(),
-      values: Array.isArray(e.values) ? e.values.map(v => (v ?? '').toString()) : [],
-    }));
+    const normalized = entries.map(e => {
+      const raw = Array.isArray(e.values) ? e.values : [];
+      const decoded = raw.map(v =>
+        typeof v === 'number' ? (valueMap[v] ?? '') : (v ?? '').toString()
+      );
+      return { muni: (e.muni ?? '').toString(), values: decoded };
+    });
     appData.rowsByPref.set(pref, normalized);
   }
 }

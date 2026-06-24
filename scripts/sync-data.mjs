@@ -22,7 +22,16 @@ const SPREADSHEET_PUB_BASE =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub';
 
 // クライアント側 cache のキー戦略と同期。スキーマ変更時に値を上げる。
-const SCHEMA_VERSION = 1;
+// v2: kana 削除、末尾の未表示カテゴリ列カット、値の整数エンコード（valueMap 参照）
+const SCHEMA_VERSION = 2;
+
+// 頻出値を整数で参照する辞書（出現頻度順ではなく安定順序で固定）
+const VALUE_DICT = ['', '対応可能', '要相談', '対応不可'];
+const VALUE_INDEX = new Map(VALUE_DICT.map((v, i) => [v, i]));
+
+// クライアントが描画対象としていない category prefix
+// （列が増減しても末尾の不要列だけが落ちる挙動になるよう、prefix 指定でゆるく持つ）
+const DROP_CATEGORY_PREFIXES = ['小規模_'];
 
 const SOURCES = {
   area: {
@@ -100,24 +109,56 @@ function parseCsvOrThrow(csvText, options) {
   return parsed.data;
 }
 
+/**
+ * クライアントが描画する最後のカテゴリ位置を返す（末尾の空欄や非対象列を落とすため）。
+ * カテゴリ末尾の空欄／DROP_CATEGORY_PREFIXES に一致する列を全部落とした位置 = cutoff（exclusive）。
+ */
+function findCategoriesCutoff(categories) {
+  let lastKeep = -1;
+  for (let i = 0; i < categories.length; i++) {
+    const c = (categories[i] ?? '').toString().trim();
+    if (c === '') continue;
+    if (DROP_CATEGORY_PREFIXES.some((p) => c.startsWith(p))) continue;
+    lastKeep = i;
+  }
+  return lastKeep + 1;
+}
+
+/** 頻出値は整数に、それ以外（自由記述など）は文字列のまま返す。trim を入れて余計な空白で未知扱いになるのを防ぐ。 */
+function encodeValue(raw) {
+  const s = (raw ?? '').toString().trim();
+  const idx = VALUE_INDEX.get(s);
+  return idx !== undefined ? idx : s;
+}
+
 function buildAreaJson(csvText, sourceUrl) {
   const table = parseCsvOrThrow(csvText, { skipEmptyLines: false });
   const headerRow = table[HEADER_ROW - 1] ?? [];
-  const categories = headerRow.slice(FIRST_JUDGE_COL - 1).map((c) => (c ?? '').toString());
+  const allCategories = headerRow.slice(FIRST_JUDGE_COL - 1).map((c) => (c ?? '').toString());
+
+  const cutoff = findCategoriesCutoff(allCategories);
+  const categories = allCategories.slice(0, cutoff);
 
   const byPref = {};
   for (let i = DATA_START_ROW - 1; i < table.length; i++) {
     const row = table[i] ?? [];
     const pref = (row[0] ?? '').toString().trim();
     const muni = (row[1] ?? '').toString().trim();
-    const kana = (row[2] ?? '').toString().trim();
     if (!pref || !muni) continue;
-    const values = row.slice(FIRST_JUDGE_COL - 1).map((v) => (v ?? '').toString());
+    // kana 列(C) はクライアント未使用のため出力しない
+    const rawValues = row.slice(FIRST_JUDGE_COL - 1, FIRST_JUDGE_COL - 1 + cutoff);
+    const values = rawValues.map(encodeValue);
     if (!byPref[pref]) byPref[pref] = [];
-    byPref[pref].push({ muni, kana, values });
+    byPref[pref].push({ muni, values });
   }
 
-  return { schemaVersion: SCHEMA_VERSION, source: sourceUrl, categories, byPref };
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    source: sourceUrl,
+    categories,
+    valueMap: VALUE_DICT,
+    byPref,
+  };
 }
 
 function buildReformWorksJson(csvText, sourceUrl) {
@@ -140,6 +181,9 @@ function validateAreaJson(data) {
   if (!Array.isArray(data.categories) || data.categories.length < MIN_CATEGORIES) {
     throw new Error(`area: categories too few (${data.categories?.length ?? 0} < ${MIN_CATEGORIES})`);
   }
+  if (!Array.isArray(data.valueMap) || data.valueMap.length === 0) {
+    throw new Error('area: valueMap missing');
+  }
   if (!data.byPref || typeof data.byPref !== 'object') {
     throw new Error('area: byPref missing');
   }
@@ -151,7 +195,7 @@ function validateAreaJson(data) {
   if (muniCount < MIN_MUNI_ROWS) {
     throw new Error(`area: muni rows too few (${muniCount} < ${MIN_MUNI_ROWS})`);
   }
-  console.log(`[validate] area OK (prefs=${prefCount}, muni=${muniCount}, categories=${data.categories.length})`);
+  console.log(`[validate] area OK (prefs=${prefCount}, muni=${muniCount}, categories=${data.categories.length}, valueMap=${data.valueMap.length})`);
 }
 
 function validateReformWorksJson(data) {
