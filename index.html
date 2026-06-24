@@ -22,11 +22,9 @@
     rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400&display=swap" rel="stylesheet">
 
-  <!-- データJSONのプリロード（同一オリジン）。crossorigin を付けると後段の fetch とポリシー不一致になり preload が利用されないため省略。 -->
-  <link rel="preload" href="data/area.json" as="fetch">
-  <link rel="preload" href="data/reform-works.json" as="fetch">
-
-  <!-- データフェッチ即時開始（DOMContentLoaded前に開始） -->
+  <!-- データフェッチ即時開始（DOMContentLoaded前に開始）。
+       preload を別途置くと crossorigin / credentials のポリシー一致を保つ手間が増えるため、
+       同一オリジン即時 fetch のみで先行取得する。 -->
   <script>
     window.__areaDataUrl = 'data/area.json';
     window.__reformWorksUrl = 'data/reform-works.json';
