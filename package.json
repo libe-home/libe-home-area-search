@@ -1,0 +1,15 @@
+{
+  "name": "libe-home-area-search",
+  "private": true,
+  "type": "module",
+  "description": "リベ大工務店 対応エリア検索（同期スクリプト用 package）",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "sync": "node scripts/sync-data.mjs"
+  },
+  "devDependencies": {
+    "papaparse": "^5.4.1"
+  }
+}
