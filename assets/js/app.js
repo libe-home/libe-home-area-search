@@ -1,14 +1,17 @@
 // ==================== 設定 ====================
 const CONFIG = {
-  AREA_DATA_URL: window.__areaDataUrl || 'data/area.json',
-  REFORM_WORKS_URL: window.__reformWorksUrl || 'data/reform-works.json',
+  CSV_URL: window.__csvUrl,
+  REFORM_WORKS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1088443442&single=true&output=csv',
   LINE_URL: 'https://lin.ee/zGxs8aB',
   KOMUTEN_CATEGORIES: ['注文住宅', 'リノベーション', 'オフィス・店舗'],  // 工務店グループの表示対象列
-  FETCH_TIMEOUT_MS: 5000,  // 同一オリジン配信なので短めで十分
+  HEADER_ROW: 3,        // 3行目にサービス名（注文住宅・リノベーション・リフォーム_各工事...）
+  DATA_START_ROW: 4,    // 4行目からデータ開始
+  FIRST_JUDGE_COL: 4    // D列から判定列
 };
 
 // ==================== グローバルデータ ====================
 const appData = {
+  table: [],              // 2次元配列（CSVデータ全体）
   categories: [],         // カテゴリ（ヘッダー行 D列以降）
   rowsByPref: new Map(),  // 都道府県別インデックス
   isReady: false          // データ準備完了フラグ
@@ -44,7 +47,7 @@ const BTN_ORIGINAL_HTML = elBtn.innerHTML;
 const ICON_EXTERNAL_LINK = '<svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>';
 const ICON_CHEVRON_DOWN = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9" /></svg>';
 
-// ==================== リフォーム各工事 ====================
+// ==================== リフォーム各工事（対応可能工事CSVから動的構築） ====================
 let reformWorks = []; // loadReformWorks() で構築
 let reformWorksReady = false;
 let reformWorksReadyResolve = null;
@@ -99,7 +102,7 @@ const STATUS_MAP = {
 };
 
 /**
- * 判定値（"対応可能", "要相談", "対応不可" 等）からステータスオブジェクトを返す。
+ * CSV上の判定値（"対応可能", "要相談", "対応不可" 等）からステータスオブジェクトを返す。
  * 返却値: { cssClass: string, label: string }
  */
 function resolveStatus(value) {
@@ -137,6 +140,7 @@ function showLoading() {
   if (elLoadingOverlay) {
     elLoadingOverlay.style.display = "flex";
     elLoadingOverlay.classList.remove("hidden");
+    // ローディングコンテンツをリセット
     if (elLoadingContent) {
       elLoadingContent.innerHTML = `
           <div class="loading-spinner"></div>
@@ -185,237 +189,185 @@ function showLoadingError() {
 }
 
 // ==================== キャッシュ設定 ====================
-// JSON化に伴いキー名を変更（旧キーは自然消滅させる）
-const CACHE_KEY_AREA = 'libe_area_data_v2';
-const CACHE_KEY_REFORM = 'libe_area_reform_v2';
-// data/*.json と一致させる。スキーマ変更時に値を上げると古いcacheを自動破棄できる。
-const EXPECTED_SCHEMA_VERSION = 1;
+const CACHE_KEY = 'libe_koumu_csv_cache';
 
-function loadJsonFromCache(key) {
+// ==================== CSV読み込みと解析 ====================
+
+/**
+ * CSVテキストをPapaParseで解析し、appData にテーブル・カテゴリ・都道府県別インデックスを構築する。
+ */
+function parseAndBuildData(csvText) {
+  const parsed = Papa.parse(csvText, {
+    skipEmptyLines: false
+  });
+
+  appData.table = parsed.data;
+
+  // ヘッダ読み取り（1行目からカテゴリを取得）
+  const headerRow = appData.table[CONFIG.HEADER_ROW - 1];
+
+  // D列以降を取得
+  appData.categories = headerRow.slice(CONFIG.FIRST_JUDGE_COL - 1);
+
+  // インデックス構築
+  buildIndex();
+}
+
+/** localStorageからキャッシュ済みCSVテキストを取得する。存在しない場合は null を返す。 */
+function loadFromCache() {
   try {
-    const cached = localStorage.getItem(key);
-    if (!cached) return null;
-    const parsed = JSON.parse(cached);
-    if (parsed && parsed.schemaVersion !== EXPECTED_SCHEMA_VERSION) {
-      console.log(`旧スキーマのキャッシュを破棄(${key})`);
-      localStorage.removeItem(key);
-      return null;
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      return cached;
     }
-    return parsed;
   } catch (e) {
-    console.warn(`キャッシュ読み込みエラー(${key}):`, e);
-    try { localStorage.removeItem(key); } catch (_) {}
+    console.warn('キャッシュ読み込みエラー:', e);
   }
   return null;
 }
 
-function saveJsonToCache(key, obj) {
+/** CSVテキストをlocalStorageにキャッシュとして保存する。 */
+function saveToCache(csvText) {
   try {
-    localStorage.setItem(key, JSON.stringify(obj));
+    localStorage.setItem(CACHE_KEY, csvText);
   } catch (e) {
-    console.warn(`キャッシュ保存エラー(${key}):`, e);
+    console.warn('キャッシュ保存エラー:', e);
   }
 }
-
-/** area.json の構造を最低限チェック。NG ならエラーを throw。 */
-function validateAreaJson(data) {
-  if (!data || typeof data !== 'object') throw new Error('area: not an object');
-  if (data.schemaVersion !== EXPECTED_SCHEMA_VERSION) {
-    throw new Error(`area: schemaVersion mismatch (${data.schemaVersion} != ${EXPECTED_SCHEMA_VERSION})`);
-  }
-  if (!Array.isArray(data.categories) || data.categories.length === 0) {
-    throw new Error('area: categories missing or empty');
-  }
-  if (!data.byPref || typeof data.byPref !== 'object' || Object.keys(data.byPref).length === 0) {
-    throw new Error('area: byPref missing or empty');
-  }
-}
-
-/** reform-works.json の構造を最低限チェック。NG ならエラーを throw。 */
-function validateReformWorksJson(data) {
-  if (!data || typeof data !== 'object') throw new Error('reformWorks: not an object');
-  if (data.schemaVersion !== EXPECTED_SCHEMA_VERSION) {
-    throw new Error(`reformWorks: schemaVersion mismatch (${data.schemaVersion} != ${EXPECTED_SCHEMA_VERSION})`);
-  }
-  if (!Array.isArray(data.works)) throw new Error('reformWorks: works missing');
-}
-
-// ==================== データ取得 ====================
 
 /**
- * `<head>` で先行開始した fetch を活用しつつ、5秒で打ち切る。
- * fallback として再フェッチも行う。最終結果はパース済みJSON、失敗時は null。
+ * メインCSVデータの読み込みと解析を行う。
+ * 1. キャッシュがあれば即座にデータを構築（高速表示）
+ * 2. バックグラウンドでネットワークから最新データを取得
+ * 3. キャッシュを更新し、差分があればデータを再構築
  */
-async function fetchJsonWithTimeout(url, preStarted) {
+async function loadAndParseCSV() {
   try {
-    if (preStarted) {
-      const result = await Promise.race([
-        preStarted,
-        new Promise(resolve => setTimeout(() => resolve({ __timeout: true }), CONFIG.FETCH_TIMEOUT_MS)),
-      ]);
-      if (result && !result.__timeout && !result.__error) {
-        return result;
-      }
-    }
-    // fallback: 自前で fetch
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT_MS);
-    try {
-      const res = await fetch(url, { signal: controller.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
-    } finally {
-      clearTimeout(timer);
-    }
-  } catch (e) {
-    console.warn(`fetch失敗 ${url}:`, e);
-    return null;
-  }
-}
+    // 1. まずキャッシュから読み込みを試みる（即座にデータ準備）
+    const cachedCSV = loadFromCache();
 
-/**
- * area.json の構造をクライアント側の在りし日の形に展開して適用する。
- */
-function applyAreaData(json) {
-  appData.categories = (json.categories || []).map(c => (c ?? '').toString());
-  appData.rowsByPref = new Map();
-  const byPref = json.byPref || {};
-  for (const pref of Object.keys(byPref)) {
-    const entries = byPref[pref];
-    if (!Array.isArray(entries)) continue;
-    const normalized = entries.map(e => ({
-      muni: (e.muni ?? '').toString(),
-      kana: (e.kana ?? '').toString(),
-      values: Array.isArray(e.values) ? e.values.map(v => (v ?? '').toString()) : [],
-    }));
-    appData.rowsByPref.set(pref, normalized);
-  }
-}
-
-/**
- * 対応エリアJSONを読み込み、appData を構築する。
- *  1. キャッシュがあれば即座に展開（表示を高速化）
- *  2. ネットワーク取得 → 検証 → 内容差分があれば再展開 → キャッシュ更新
- *  3. ネットワーク失敗時はキャッシュをそのまま使う（取れていれば動作継続）
- *  4. 展開に失敗した場合は loadError を立てて初回ハングを防ぐ
- */
-async function loadAreaData() {
-  const cached = loadJsonFromCache(CACHE_KEY_AREA);
-  if (cached) {
-    try {
-      validateAreaJson(cached);
-      applyAreaData(cached);
-      appData.isReady = true;
-      dataReadyResolve();
-      onDataReady();
-      console.log('キャッシュからエリアデータを読み込みました');
-    } catch (e) {
-      console.warn('キャッシュ展開に失敗:', e);
-      try { localStorage.removeItem(CACHE_KEY_AREA); } catch (_) {}
-    }
-  }
-
-  const fresh = await fetchJsonWithTimeout(CONFIG.AREA_DATA_URL, window.__areaDataPromise);
-  if (fresh) {
-    try {
-      validateAreaJson(fresh);
-    } catch (e) {
-      console.warn('取得したエリアデータが不正:', e);
-      if (!appData.isReady) {
-        appData.loadError = e;
-        dataReadyResolve();
-      }
-      return;
-    }
-
-    if (!appData.isReady) {
+    if (cachedCSV) {
       try {
-        applyAreaData(fresh);
+        parseAndBuildData(cachedCSV);
         appData.isReady = true;
         dataReadyResolve();
         onDataReady();
-        saveJsonToCache(CACHE_KEY_AREA, fresh);
-        console.log('ネットワークからエリアデータを読み込みました');
+        console.log('キャッシュからデータを読み込みました');
       } catch (e) {
-        console.warn('エリアデータ展開エラー:', e);
-        appData.loadError = e;
-        dataReadyResolve();
-      }
-    } else if (!cached || JSON.stringify(cached) !== JSON.stringify(fresh)) {
-      try {
-        applyAreaData(fresh);
-        saveJsonToCache(CACHE_KEY_AREA, fresh);
-        console.log('バックグラウンドでエリアデータを更新しました');
-      } catch (e) {
-        console.warn('エリアデータ再展開エラー（既存データで継続）:', e);
+        console.warn('キャッシュデータの解析に失敗:', e);
       }
     }
-    return;
-  }
 
-  if (!appData.isReady) {
-    appData.loadError = new Error('エリアデータの取得に失敗しました');
-    dataReadyResolve();
-  } else {
-    console.warn('ネットワーク取得失敗。キャッシュデータで動作継続');
+    // 2. バックグラウンドで最新データを取得（UIをブロックしない）
+    let csvText = null;
+
+    if (window.__csvFetchPromise) {
+      // 既に開始済みのfetchを待つ
+      csvText = await window.__csvFetchPromise;
+      if (window.__csvFetchError) {
+        throw new Error(window.__csvFetchError);
+      }
+    }
+
+    if (!csvText) {
+      // フォールバック：再度fetchを実行
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => controller.abort(), 60000);
+
+      const response = await fetch(CONFIG.CSV_URL, {
+        signal: controller.signal
+      });
+      clearTimeout(fetchTimeout);
+
+      if (!response.ok) throw new Error('CSV取得失敗');
+      csvText = await response.text();
+    }
+
+    // 3. キャッシュを更新
+    saveToCache(csvText);
+
+    // 4. データを構築
+    if (!appData.isReady) {
+      // 初回：データを構築して準備完了
+      parseAndBuildData(csvText);
+      appData.isReady = true;
+      dataReadyResolve();
+      onDataReady();
+      console.log('ネットワークからデータを読み込みました');
+    } else if (cachedCSV !== csvText) {
+      // キャッシュと異なる場合：データを更新
+      parseAndBuildData(csvText);
+      console.log('バックグラウンドでデータを更新しました');
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    // キャッシュから読み込み済みなら、エラーは警告程度に
+    if (appData.isReady) {
+      console.warn('ネットワークエラーですが、キャッシュデータで動作中');
+      return;
+    }
+
+    // データがない場合はエラーを記録（確認ボタン押下時にエラー表示）
+    appData.loadError = error;
+    dataReadyResolve(); // エラーでもPromiseを解決して待機を終了
+  }
+}
+
+// ==================== 対応可能工事CSV読み込み ====================
+
+/**
+ * リフォーム対応可能工事のCSVを取得し、reformWorks 配列を構築する。
+ * 各工事の名前・列キー・説明を保持する。
+ */
+async function loadReformWorks() {
+  try {
+    const response = await fetch(CONFIG.REFORM_WORKS_CSV_URL);
+    if (!response.ok) throw new Error('対応可能工事CSV取得失敗');
+    const csvText = await response.text();
+    const parsed = Papa.parse(csvText, { skipEmptyLines: true });
+    // 行1(コメント)・行2(ヘッダー)をスキップ
+    reformWorks = parsed.data.slice(2)
+      .filter(row => row[0] && row[0].trim())
+      .map(row => ({
+        name: row[0].trim(),
+        colKey: 'リフォーム_' + row[0].trim(),
+        desc: row[1] ? row[1].trim() : ''
+      }));
+    console.log('対応可能工事データ読み込み完了:', reformWorks.length, '件');
+  } catch (error) {
+    console.error('対応可能工事CSV取得エラー:', error);
+  } finally {
+    reformWorksReady = true;
+    reformWorksReadyResolve();
   }
 }
 
 /**
- * リフォーム工事JSONを読み込み、reformWorks を構築する。
- * キャッシュ／timeout／フォールバックを備え、サイト全体を止めないよう設計。
+ * CSVデータから都道府県別のインデックス（Map）を構築する。
+ * 各エントリには市区町村名・かな・行インデックス・行データを格納。
  */
-async function loadReformWorks() {
-  const cached = loadJsonFromCache(CACHE_KEY_REFORM);
-  if (cached) {
-    try {
-      validateReformWorksJson(cached);
-      reformWorks = cached.works;
-      reformWorksReady = true;
-      reformWorksReadyResolve();
-      console.log('キャッシュからリフォーム工事データを読み込みました');
-    } catch (e) {
-      console.warn('リフォーム工事キャッシュが不正:', e);
-      try { localStorage.removeItem(CACHE_KEY_REFORM); } catch (_) {}
-    }
-  }
+function buildIndex() {
+  appData.rowsByPref = new Map();
 
-  const fresh = await fetchJsonWithTimeout(CONFIG.REFORM_WORKS_URL, window.__reformWorksPromise);
-  if (fresh) {
-    try {
-      validateReformWorksJson(fresh);
-    } catch (e) {
-      console.warn('取得したリフォーム工事データが不正:', e);
-      if (!reformWorksReady) {
-        reformWorks = [];
-        reformWorksReady = true;
-        reformWorksReadyResolve();
-      }
-      return;
+  for (let i = CONFIG.DATA_START_ROW - 1; i < appData.table.length; i++) {
+    const row = appData.table[i];
+    const pref = row[0]?.trim();
+    const muni = row[1]?.trim();
+    const kana = row[2]?.trim();
+
+    if (!pref || !muni) continue;
+
+    if (!appData.rowsByPref.has(pref)) {
+      appData.rowsByPref.set(pref, []);
     }
 
-    if (!reformWorksReady) {
-      reformWorks = fresh.works;
-      reformWorksReady = true;
-      reformWorksReadyResolve();
-      saveJsonToCache(CACHE_KEY_REFORM, fresh);
-      console.log('ネットワークからリフォーム工事データを読み込みました');
-    } else if (!cached || JSON.stringify(cached.works) !== JSON.stringify(fresh.works)) {
-      reformWorks = fresh.works;
-      saveJsonToCache(CACHE_KEY_REFORM, fresh);
-      console.log('バックグラウンドでリフォーム工事データを更新しました');
-    }
-    return;
-  }
-
-  if (!reformWorksReady) {
-    // ネットワーク失敗かつキャッシュ無し → 結果表示はする（部分劣化）
-    console.warn('リフォーム工事データの取得に失敗。空のまま継続します');
-    reformWorks = [];
-    reformWorksReady = true;
-    reformWorksReadyResolve();
-  } else {
-    console.warn('ネットワーク取得失敗。リフォーム工事はキャッシュで動作継続');
+    appData.rowsByPref.get(pref).push({
+      muni,
+      kana,
+      rowData: row
+    });
   }
 }
 
@@ -486,7 +438,8 @@ function getJudgement(pref, muni) {
     };
   }
 
-  const values = matches[0].values || [];
+  const targetRow = matches[0];
+  const values = targetRow.rowData.slice(CONFIG.FIRST_JUDGE_COL - 1);
 
   const items = [];
   for (let i = 0; i < values.length; i++) {
@@ -583,7 +536,7 @@ function renderReformGroup(reformItems, masterValue) {
       </h3>
     `;
 
-  // 工事情報の取得に失敗した場合
+  // 工事情報CSVの取得に失敗した場合
   if (reformWorks.length === 0) {
     const noteItem = document.createElement("div");
     noteItem.className = "result-item";
@@ -843,6 +796,7 @@ function onPrefChange() {
   setMsg("", "");
   clearResult();
   populateMuniSelect(elPref.value);
+  // ヒントを再表示
   if (elMuniHint) {
     elMuniHint.classList.remove("hidden");
   }
@@ -872,6 +826,7 @@ async function onSubmit() {
   setMsg("", "");
   clearResult();
 
+  // 基本バリデーション（都道府県・市区町村が入力されているか）
   if (!pref) {
     setMsg('都道府県を選択してください', "error");
     return;
@@ -886,16 +841,21 @@ async function onSubmit() {
   // データがまだ準備できていない場合はローディングを表示して待つ
   if (!appData.isReady) {
     showLoading();
+
+    // タイムアウト警告を設定
     loadingTimeout = setTimeout(() => {
       showLoadingError();
-    }, 8000);
+    }, 20000);
 
     await dataReadyPromise;
     hideLoading();
 
+    // エラーがあった場合
     if (appData.loadError) {
       let errorMessage = 'データの読み込みに失敗しました';
-      if (!navigator.onLine) {
+      if (appData.loadError.name === 'AbortError') {
+        errorMessage = '読み込みに時間がかかりすぎています。ページを再読み込みしてください。';
+      } else if (!navigator.onLine) {
         errorMessage = 'インターネット接続を確認してください';
       }
       setMsg(errorMessage, 'error');
@@ -904,7 +864,7 @@ async function onSubmit() {
     }
   }
 
-  // リフォーム工事データの準備を待つ（取れなくても部分劣化で続行）
+  // リフォーム工事データの準備を待つ
   if (!reformWorksReady) {
     await reformWorksReadyPromise;
   }
@@ -926,11 +886,12 @@ async function onSubmit() {
 // ==================== 初期化 ====================
 
 document.addEventListener("DOMContentLoaded", () => {
+  // イベントリスナー設定
   elPref.addEventListener("change", onPrefChange);
   elMuni.addEventListener("change", onMuniChange);
   elBtn.addEventListener("click", onSubmit);
 
-  // データを並列取得
-  loadAreaData();
+  // CSVデータをバックグラウンドで並列取得
+  loadAndParseCSV();
   loadReformWorks();
 });
