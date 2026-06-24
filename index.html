@@ -26,8 +26,9 @@
        preload を別途置くと crossorigin / credentials のポリシー一致を保つ手間が増えるため、
        同一オリジン即時 fetch のみで先行取得する。 -->
   <script>
-    window.__areaDataUrl = 'data/area.json';
-    window.__reformWorksUrl = 'data/reform-works.json';
+    // v= は schemaVersion 変更時の cache 衝突回避用。スキーマを上げたら下記2つの value も上げる。
+    window.__areaDataUrl = 'data/area.json?v=20260624';
+    window.__reformWorksUrl = 'data/reform-works.json?v=20260624';
     const __startFetch = (url) =>
       fetch(url)
         .then(res => res.ok ? res.json() : Promise.reject(new Error('HTTP ' + res.status)))

@@ -124,9 +124,9 @@ function findCategoriesCutoff(categories) {
   return lastKeep + 1;
 }
 
-/** 頻出値は整数に、それ以外（自由記述など）は文字列のまま返す。 */
+/** 頻出値は整数に、それ以外（自由記述など）は文字列のまま返す。trim を入れて余計な空白で未知扱いになるのを防ぐ。 */
 function encodeValue(raw) {
-  const s = (raw ?? '').toString();
+  const s = (raw ?? '').toString().trim();
   const idx = VALUE_INDEX.get(s);
   return idx !== undefined ? idx : s;
 }
