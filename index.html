@@ -36,7 +36,8 @@
     window.__reformWorksPromise = __startFetch(window.__reformWorksUrl);
   </script>
 
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- v= はキャッシュバスティング用。assets/css/style.css か assets/js/app.js を変更したら YYYYMMDD を更新する。 -->
+  <link rel="stylesheet" href="assets/css/style.css?v=20260624" />
 </head>
 
 <body>
@@ -173,7 +174,7 @@
     </footer>
   </div>
 
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=20260624"></script>
 </body>
 
 </html>

@@ -189,7 +189,8 @@ function showLoadingError() {
 const CACHE_KEY_AREA = 'libe_area_data_v2';
 const CACHE_KEY_REFORM = 'libe_area_reform_v2';
 // data/*.json と一致させる。スキーマ変更時に値を上げると古いcacheを自動破棄できる。
-const EXPECTED_SCHEMA_VERSION = 1;
+// v2: kana 削除、末尾の未表示カテゴリ列カット、値の整数エンコード（valueMap 参照）
+const EXPECTED_SCHEMA_VERSION = 2;
 
 function loadJsonFromCache(key) {
   try {
@@ -225,6 +226,9 @@ function validateAreaJson(data) {
   }
   if (!Array.isArray(data.categories) || data.categories.length === 0) {
     throw new Error('area: categories missing or empty');
+  }
+  if (!Array.isArray(data.valueMap) || data.valueMap.length === 0) {
+    throw new Error('area: valueMap missing');
   }
   if (!data.byPref || typeof data.byPref !== 'object' || Object.keys(data.byPref).length === 0) {
     throw new Error('area: byPref missing or empty');
@@ -274,20 +278,26 @@ async function fetchJsonWithTimeout(url, preStarted) {
 }
 
 /**
- * area.json の構造をクライアント側の在りし日の形に展開して適用する。
+ * area.json の構造をクライアント内部表現に展開する。
+ * values は valueMap 経由で整数→文字列へ復号する（schemaVersion=2 の圧縮対応）。
  */
 function applyAreaData(json) {
   appData.categories = (json.categories || []).map(c => (c ?? '').toString());
+  const valueMap = Array.isArray(json.valueMap)
+    ? json.valueMap.map(v => (v ?? '').toString())
+    : [];
   appData.rowsByPref = new Map();
   const byPref = json.byPref || {};
   for (const pref of Object.keys(byPref)) {
     const entries = byPref[pref];
     if (!Array.isArray(entries)) continue;
-    const normalized = entries.map(e => ({
-      muni: (e.muni ?? '').toString(),
-      kana: (e.kana ?? '').toString(),
-      values: Array.isArray(e.values) ? e.values.map(v => (v ?? '').toString()) : [],
-    }));
+    const normalized = entries.map(e => {
+      const raw = Array.isArray(e.values) ? e.values : [];
+      const decoded = raw.map(v =>
+        typeof v === 'number' ? (valueMap[v] ?? '') : (v ?? '').toString()
+      );
+      return { muni: (e.muni ?? '').toString(), values: decoded };
+    });
     appData.rowsByPref.set(pref, normalized);
   }
 }
