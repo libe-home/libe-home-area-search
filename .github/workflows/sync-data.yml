@@ -1,0 +1,55 @@
+name: Sync spreadsheet data
+
+on:
+  schedule:
+    # 30分ごとにスプシ→data/*.json を同期。
+    # :00/:30 は GitHub Actions の混雑帯なので 7,37 にずらす。
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-data
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - run: npm ci --ignore-scripts
+
+      - name: Sync spreadsheet to JSON
+        run: node scripts/sync-data.mjs
+
+      - name: Commit and push if data changed
+        run: |
+          if [[ -z "$(git status --porcelain data/)" ]]; then
+            echo "No data changes. Skipping commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "chore: sync spreadsheet data"
+
+          # 並行実行や手動コミットとの衝突に備えてリベース＆リトライ
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "Pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "Push failed on attempt $attempt, rebasing..."
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            sleep $((attempt * 2))
+          done
+          echo "Push failed after 3 attempts"
+          exit 1
