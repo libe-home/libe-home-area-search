@@ -22,22 +22,20 @@
     rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400&display=swap" rel="stylesheet">
 
-  <!-- リソースプリロード -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" as="script"
-    integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ=="
-    crossorigin="anonymous">
+  <!-- データJSONのプリロード（同一オリジン）。crossorigin を付けると後段の fetch とポリシー不一致になり preload が利用されないため省略。 -->
+  <link rel="preload" href="data/area.json" as="fetch">
+  <link rel="preload" href="data/reform-works.json" as="fetch">
 
-  <!-- PapaParse CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
-    integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ=="
-    crossorigin="anonymous"></script>
-
-  <!-- CSVフェッチ即時開始（DOMContentLoaded前に開始） -->
+  <!-- データフェッチ即時開始（DOMContentLoaded前に開始） -->
   <script>
-    window.__csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTakKTc-ekIJM4mN34A0MP4WjpiaXgcie8bQYn5fMswI85X91fNSUDGOT59nGMnHQomYL4BVsxAtDf-/pub?gid=1502020184&single=true&output=csv';
-    window.__csvFetchPromise = fetch(window.__csvUrl)
-      .then(res => res.ok ? res.text() : Promise.reject('CSV取得失敗'))
-      .catch(err => { window.__csvFetchError = err; return null; });
+    window.__areaDataUrl = 'data/area.json';
+    window.__reformWorksUrl = 'data/reform-works.json';
+    const __startFetch = (url) =>
+      fetch(url)
+        .then(res => res.ok ? res.json() : Promise.reject(new Error('HTTP ' + res.status)))
+        .catch(err => ({ __error: err }));
+    window.__areaDataPromise = __startFetch(window.__areaDataUrl);
+    window.__reformWorksPromise = __startFetch(window.__reformWorksUrl);
   </script>
 
   <link rel="stylesheet" href="assets/css/style.css" />
