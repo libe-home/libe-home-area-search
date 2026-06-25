@@ -54,8 +54,11 @@ const DATA_START_ROW = 4;   // 4行目からデータ
 const FIRST_JUDGE_COL = 4;  // D列から判定列
 
 const FETCH_TIMEOUT_MS = 60_000;
-const FETCH_RETRIES = 3;
-const RETRY_DELAY_MS = 5_000;
+const FETCH_RETRIES = 4;
+// 指数バックオフ。Google pub CSV は「生成中は応答せず、キャッシュ可用化されたら一気に返す」
+// 挙動なので、短い間隔で連打しても同じ無応答期に当たり続ける。間を広く取ってキャッシュ
+// 再生成サイクルを跨ぐ狙い。attempt N失敗後に RETRY_DELAYS_MS[N-1] 秒待つ。
+const RETRY_DELAYS_MS = [5_000, 30_000, 120_000];
 
 // CSVが極端に短い場合は Google が HTML エラーページを 200 で返したと判断する
 const MIN_CSV_BYTES = 100;
@@ -87,7 +90,9 @@ async function fetchWithRetry(url) {
       lastErr = err;
       console.warn(`[fetch] attempt ${attempt}/${FETCH_RETRIES} failed: ${err.message}`);
       if (attempt < FETCH_RETRIES) {
-        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+        const delay = RETRY_DELAYS_MS[attempt - 1] ?? RETRY_DELAYS_MS[RETRY_DELAYS_MS.length - 1];
+        console.log(`[fetch] backoff ${delay / 1000}s before retry`);
+        await new Promise((r) => setTimeout(r, delay));
       }
     } finally {
       clearTimeout(timer);
@@ -250,17 +255,24 @@ async function main() {
     }
   }
 
-  if (failures.length > 0) {
-    console.error(`[sync] failed sources: ${failures.join(', ')} (skip write to keep existing data)`);
+  // 全 source 失敗時のみ致命扱い。部分失敗は既存JSONを維持して warning だけ残し、
+  // 取得できた source は書き込んで sync 自体は成功扱いにする
+  // （Google pub CSV のキャッシュ可用化ラグで area / reformWorks のどちらかだけ
+  //   3回連続タイムアウトすることがあり、その都度ジョブが落ちると noise が増える）。
+  if (Object.keys(built).length === 0) {
+    console.error(`[sync] all sources failed: ${failures.join(', ')}`);
     process.exit(1);
   }
+  if (failures.length > 0) {
+    console.warn(`[sync] partial failure: ${failures.join(', ')} (keeping existing data for these sources)`);
+  }
 
-  // 2. cross validation（warning only）
+  // 2. cross validation（両方取得できた時だけ実施。warning only）
   if (built.area && built.reformWorks) {
     crossValidate(built.area.json, built.reformWorks.json);
   }
 
-  // 3. まとめて write
+  // 3. 取得できた分だけ write
   for (const { src, json } of Object.values(built)) {
     await writeJson(src.out, json);
   }
