@@ -53,9 +53,9 @@ const HEADER_ROW = 3;       // 3行目にサービス名
 const DATA_START_ROW = 4;   // 4行目からデータ
 const FIRST_JUDGE_COL = 4;  // D列から判定列
 
-const FETCH_TIMEOUT_MS = 30_000;
+const FETCH_TIMEOUT_MS = 60_000;
 const FETCH_RETRIES = 3;
-const RETRY_DELAY_MS = 2_000;
+const RETRY_DELAY_MS = 5_000;
 
 // CSVが極端に短い場合は Google が HTML エラーページを 200 で返したと判断する
 const MIN_CSV_BYTES = 100;
